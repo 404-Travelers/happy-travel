@@ -1,5 +1,6 @@
 package com._travelers.happy_travel.users;
 
+import com._travelers.happy_travel.exceptions.EntityNotFoundException;
 import com._travelers.happy_travel.users.dto.UserResponse;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -49,6 +51,16 @@ public class UserServiceTest {
         User result = userService.getUserById(id);
 
         assertEquals(userEntity, result);
+        verify(userRepository, times(1)).findById(id);
+    }
+    
+    @Test
+    void getUserById_whenUserDoesNotExist_returnsException() {
+        Exception expectedException = new EntityNotFoundException(User.class.getSimpleName(), "id", id.toString());
+        when(userRepository.findById(eq(id))).thenReturn(Optional.empty());
+
+        Exception resultException = assertThrows(EntityNotFoundException.class, () -> userService.getUserById(id));
+        assertEquals(expectedException.getMessage(), resultException.getMessage());
         verify(userRepository, times(1)).findById(id);
     }
 }
