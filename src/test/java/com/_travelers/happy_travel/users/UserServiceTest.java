@@ -1,13 +1,18 @@
 package com._travelers.happy_travel.users;
 
+import com._travelers.happy_travel.users.dto.UserResponse;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.mockito.Mockito.verifyNoMoreInteractions;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
@@ -18,11 +23,23 @@ public class UserServiceTest {
     private UserService userService;
 
     @BeforeEach
-    void setUp() {}
+    void setUp() {
+
+    }
     
     @AfterEach
     void afterTest(){
         verifyNoMoreInteractions(userRepository);
+    }
+    
+    @Test
+    void getAllUsers_whenUsersExist_returnsListOfUsersResponse() {
+        List<UserResponse> expectedResult = List.of(userResponse);
+        when(userRepository.findAll()).thenReturn(List.of(userEntity));
+        List<UserResponse> result = userService.getAllUsers();
+
+        assertEquals(expectedResult, result);
+        verify(userRepository, times(1)).findAll();
     }
 
 }
