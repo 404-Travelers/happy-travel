@@ -10,6 +10,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
@@ -41,5 +42,13 @@ public class UserServiceTest {
         assertEquals(expectedResult, result);
         verify(userRepository, times(1)).findAll();
     }
+    
+    @Test
+    void getUserById_whenUserExists_returnsUser() {
+        when(userRepository.findById(eq(id))).thenReturn(Optional.of(userEntityRepo));
+        User result = userService.getUserById(id);
 
+        assertEquals(userEntity, result);
+        verify(userRepository, times(1)).findById(id);
+    }
 }
