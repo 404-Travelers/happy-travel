@@ -94,11 +94,10 @@ public class UserServiceTest {
         User user = new User();
         when(userRepository.save(any(User.class))).thenReturn(user);
 
-        User result = userService.addUser(userRequest);
+        UserResponse result = userService.addUser(userRequest);
 
         assertEquals(userResponse, result);
         verify(userRepository, times(1)).save(user);
-
     }
 
     @Test
@@ -112,6 +111,18 @@ public class UserServiceTest {
         assertEquals(expectedMessage, exception.getMessage());
         verify(userRepository, times(1)).save(user);
         verify(userRepository, times(1)).findByUsername(username);
+    }
 
+    @Test
+    void updateUser_whenUserRequestIsValid_returnsUserResponse(){
+        UserRequest userRequest = new UserRequest():
+        UserResponse userResponse = new UserResponse();
+        User user = new User();
+        when(userRepository.save(any(User.class))).thenReturn(user);
+
+        UserResponse result = userService.updateUser(userRequest);
+
+        assertEquals(userResponse, result);
+        verify(userRepository, times(1)).save(user);
     }
 }
