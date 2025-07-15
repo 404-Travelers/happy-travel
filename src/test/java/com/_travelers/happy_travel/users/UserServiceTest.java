@@ -101,7 +101,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void addUser_whenUsernameAlreadyExists_returnsUserResponse(){
+    void addUser_whenUsernameAlreadyExists_returnsException(){
         UserRequest userRequest = new UserRequest():
         User user = new User();
         String expectedMessage = "User with username " + username + " already exists";
@@ -124,5 +124,18 @@ public class UserServiceTest {
 
         assertEquals(userResponse, result);
         verify(userRepository, times(1)).save(user);
+    }
+
+    @Test
+    void updateUser_whenUsernameAlreadyExists_returnsException(){
+        UserRequest userRequest = new UserRequest():
+        User user = new User();
+        String expectedMessage = "User with username " + username + " already exists";
+        when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
+
+        Exception exception = assertThrows(EntityAlreadyExistsException.class, () -> userService.updateUser(userRequest));
+        assertEquals(expectedMessage, exception.getMessage());
+        verify(userRepository, times(1)).save(user);
+        verify(userRepository, times(1)).findByUsername(username);
     }
 }
