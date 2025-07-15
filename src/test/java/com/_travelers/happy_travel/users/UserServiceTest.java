@@ -1,6 +1,7 @@
 package com._travelers.happy_travel.users;
 
 import com._travelers.happy_travel.exceptions.EntityNotFoundException;
+import com._travelers.happy_travel.users.dto.UserRequest;
 import com._travelers.happy_travel.users.dto.UserResponse;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -83,5 +84,19 @@ public class UserServiceTest {
         Exception exception = assertThrows(EntityNotFoundException.class, () -> userService.getUserByUsername(username));
         assertEquals(expectedMessage, exception.getMessage());
         verify(userRepository, times(1)).findByUsername(username);
+    }
+
+    @Test
+    void addUser_whenUserIsNew_returnsUserResponse(){
+        UserRequest userRequest = new UserRequest():
+        UserResponse userResponse = new UserResponse();
+        User user = new User();
+        when(userRepository.save(any(User.class))).thenReturn(user);
+
+        User result = userService.addUser(userRequest);
+
+        assertEquals(userResponse, result);
+        verify(userRepository, times(1)).save(user);
+
     }
 }
