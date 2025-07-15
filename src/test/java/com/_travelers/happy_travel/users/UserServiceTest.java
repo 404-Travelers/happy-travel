@@ -151,4 +151,17 @@ public class UserServiceTest {
         verify(userRepository, times(1)).findById(id);
         verify(userRepository, times(1)).deleteById(user);
     }
+
+        @Test
+    void deleteUser_whenUserDoesNotExist_returnsException() {
+        Long id  = 1L;
+
+        String expectedMessage = "User with id " + id + " was not found";
+        when(userRepository.findById(eq(id))).thenReturn(Optional.empty());
+
+        Exception exception = assertThrows(EntityNotFoundException.class, () -> userService.deleteUser(id));
+
+        assertEquals(expectedMessage, exception.getMessage());
+        verify(userRepository, times(1)).findById(id);
+    }
 }
