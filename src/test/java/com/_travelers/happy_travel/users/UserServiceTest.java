@@ -67,21 +67,21 @@ public class UserServiceTest {
         @Test
     void getUserByUsername_whenUserExists_returnsUser() {
         String username ="User 1";
-        when(userRepository.findByUsernameIgnoreCase(eq(username))).thenReturn(Optional.of(userEntity));
+        when(userRepository.findByUsername(eq(username))).thenReturn(Optional.of(userEntity));
         User result = userService.getUserByUsername(username);
 
         assertEquals(userEntityRepo, result);
-        verify(userRepository, times(1)).findByUsernameIgnoreCase(username);
+        verify(userRepository, times(1)).findByUsername(username);
     }
 
     @Test
     void getUserByUsername_whenUserDoesNotExist_returnsException() {
         String username = "user 2";
         String expectedMessage = "User with username " + username + " was not found";
-        when(userRepository.findByUsernameIgnoreCase(anyString())).thenReturn(Optional.empty());
+        when(userRepository.findByUsername(anyString())).thenReturn(Optional.empty());
 
         Exception exception = assertThrows(EntityNotFoundException.class, () -> userService.getUserByUsername(username));
         assertEquals(expectedMessage, exception.getMessage());
-        verify(userRepository, times(1)).findByUsernameIgnoreCase(username);
+        verify(userRepository, times(1)).findByUsername(username);
     }
 }
