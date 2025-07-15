@@ -66,7 +66,7 @@ public class UserServiceTest {
         verify(userRepository, times(1)).findById(id);
     }
     
-        @Test
+    @Test
     void getUserByUsername_whenUserExists_returnsUser() {
         String username ="User 1";
         when(userRepository.findByUsername(eq(username))).thenReturn(Optional.of(userEntity));
@@ -89,7 +89,7 @@ public class UserServiceTest {
 
     @Test
     void addUser_whenUserIsNew_returnsUserResponse(){
-        UserRequest userRequest = new UserRequest():
+        UserRequest userRequest = new UserRequest();
         UserResponse userResponse = new UserResponse();
         User user = new User();
         when(userRepository.save(any(User.class))).thenReturn(user);
@@ -102,7 +102,7 @@ public class UserServiceTest {
 
     @Test
     void addUser_whenUsernameAlreadyExists_returnsException(){
-        UserRequest userRequest = new UserRequest():
+        UserRequest userRequest = new UserRequest();
         User user = new User();
         String expectedMessage = "User with username " + username + " already exists";
         when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
@@ -115,7 +115,7 @@ public class UserServiceTest {
 
     @Test
     void updateUser_whenUserRequestIsValid_returnsUserResponse(){
-        UserRequest userRequest = new UserRequest():
+        UserRequest userRequest = new UserRequest();
         UserResponse userResponse = new UserResponse();
         User user = new User();
         when(userRepository.save(any(User.class))).thenReturn(user);
@@ -128,7 +128,7 @@ public class UserServiceTest {
 
     @Test
     void updateUser_whenUsernameAlreadyExists_returnsException(){
-        UserRequest userRequest = new UserRequest():
+        UserRequest userRequest = new UserRequest();
         User user = new User();
         String expectedMessage = "User with username " + username + " already exists";
         when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
@@ -137,5 +137,18 @@ public class UserServiceTest {
         assertEquals(expectedMessage, exception.getMessage());
         verify(userRepository, times(1)).save(user);
         verify(userRepository, times(1)).findByUsername(username);
+    }
+
+    @Test
+    void deleteUser_whenUserExists_returnsMessage() {
+        Long id  = 1L;
+        User user = new User();
+        String expectedMessage = "User with id " + id + " deleted successfully";
+        when(userRepository.findById(eq(id))).thenReturn(Optional.of(user));
+        String result = userService.deleteUser(id);
+
+        assertEquals(expectedMessage, result);
+        verify(userRepository, times(1)).findById(id);
+        verify(userRepository, times(1)).deleteById(user);
     }
 }
