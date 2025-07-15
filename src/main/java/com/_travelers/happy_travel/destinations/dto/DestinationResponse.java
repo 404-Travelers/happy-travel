@@ -1,4 +1,12 @@
 package com._travelers.happy_travel.destinations.dto;
 
-public record DestinationResponse() {
+import com._travelers.happy_travel.users.User;
+
+public record DestinationResponse(
+        String country,
+        String city,
+        String description,
+        String imageUrl,
+        User user
+) {
 }
