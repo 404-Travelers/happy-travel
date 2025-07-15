@@ -1,5 +1,6 @@
 package com._travelers.happy_travel.users;
 
+import com._travelers.happy_travel.exceptions.EntityAlreadyExistsException;
 import com._travelers.happy_travel.exceptions.EntityNotFoundException;
 import com._travelers.happy_travel.users.dto.UserRequest;
 import com._travelers.happy_travel.users.dto.UserResponse;
@@ -97,6 +98,20 @@ public class UserServiceTest {
 
         assertEquals(userResponse, result);
         verify(userRepository, times(1)).save(user);
+
+    }
+
+    @Test
+    void addUser_whenUsernameAlreadyExists_returnsUserResponse(){
+        UserRequest userRequest = new UserRequest():
+        User user = new User();
+        String expectedMessage = "User with username " + username + " already exists";
+        when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
+
+        Exception exception = assertThrows(EntityAlreadyExistsException.class, () -> userService.addUser(userRequest));
+        assertEquals(expectedMessage, exception.getMessage());
+        verify(userRepository, times(1)).save(user);
+        verify(userRepository, times(1)).findByUsername(username);
 
     }
 }
