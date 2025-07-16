@@ -127,4 +127,21 @@ public class DestinationControllerTest{
                 .andExpect(status().isConflict())
                 .andExpect(content().json(expectedJson));
     }
+
+        @Test
+    void updateDestination_whenRequestIsValid_returnsDestinationResponseEntity() throws Exception {
+        DestinationRequest destinationRequest = new DestinationRequest();
+        String jsonRequest = objectMapper.writeValueAsString(new DestinationRequest());
+        DestinationResponse serviceResult = new DestinationResponse();
+        String expectedJson = objectMapper.writeValueAsString(new DestinationResponse());
+        given(destinationService.updateDestination(eq(destinationRequest))).willReturn(serviceResult);
+
+        mockMvc.perform(post("/destinations")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(jsonRequest))
+                .andExpect(status().isOk())
+                .andExpect(content().json(expectedJson));
+
+        verify(destinationService, times(1)).updateDestination(eq(destinationRequest));
+    }
 }
