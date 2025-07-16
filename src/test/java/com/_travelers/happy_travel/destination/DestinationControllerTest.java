@@ -159,4 +159,17 @@ public class DestinationControllerTest{
                 .andExpect(status().isConflict())
                 .andExpect(content().json(expectedJson));
     }
+
+        @Test
+    void deleteDestination_whenRequestIsValid_returnsMessageEntity() throws Exception{
+        Long id = 1L;
+        String message = "Destination deleted successfully";
+        given(destinationService.deleteDestination(eq(id))).willReturn(message);
+
+        mockMvc.perform(delete("/destinations/{id}", id))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Destination deleted successfully"));
+
+        verify(destinationService, times(1)).deleteDestination(eq(id));
+    }
 }
