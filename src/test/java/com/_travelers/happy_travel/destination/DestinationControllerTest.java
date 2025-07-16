@@ -20,6 +20,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
@@ -116,5 +117,20 @@ public class DestinationControllerTest{
                 .andExpect(content().json(expectedJson));
 
         verify(destinationService, times(1)).addDestination(eq(destinationRequest));
+    }
+
+        @Test
+    void addDestination_whenRequestIsInvalid_returnsDestinationResponse() throws Exception {
+        String jsonInvalidRequest = objectMapper.writeValueAsString(new DestinationRequest());
+        String message = "Destination city must contain min 2 and max 50 characters";
+        String expectedJson = new ObjectMapper().writeValueAsString(
+                new HashMap<String, String>() {{put("city", message);}}
+        );
+
+        mockMvc.perform(post("/destinations")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(jsonInvalidRequest))
+                .andExpect(status().isConflict())
+                .andExpect(content().json(expectedJson));
     }
 }
