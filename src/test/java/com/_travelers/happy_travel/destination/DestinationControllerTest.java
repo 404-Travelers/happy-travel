@@ -7,6 +7,7 @@ import com._travelers.happy_travel.destinations.dto.DestinationResponseShort;
 import com._travelers.happy_travel.exceptions.EntityNotFoundException;
 import com._travelers.happy_travel.exceptions.ErrorResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -46,6 +47,11 @@ public class DestinationControllerTest{
     void setUp() {
     }
 
+    @AfterEach
+    void afterTest(){
+        verifyNoMoreInteractions(destinationService);
+    }
+
     @Test
     void getAllDestinations_whenDestinationsExist_returnsListOfDestinationsResponseShort() throws Exception {
         List<DestinationResponseShort> serviceResult = List.of(new DestinationResponseShort());
@@ -56,7 +62,7 @@ public class DestinationControllerTest{
                 .andExpect(status().isOk())
                 .andExpect(content().json(expectedJson));
 
-//        verify(destinationService, times(1)).getAllDestinations();
+        verify(destinationService, times(1)).getAllDestinations();
     }
 
     @Test
@@ -70,6 +76,8 @@ public class DestinationControllerTest{
                     .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().json(expectedJson));
+
+        verify(destinationService, times(1)).getDestinationById(eq(id));
     }
 
     @Test
@@ -89,6 +97,6 @@ public class DestinationControllerTest{
                 .andExpect(status().isNotFound())
                 .andExpect(result -> assertEquals(Objects.requireNonNull(result.getResolvedException()).getMessage(), exception.getMessage()))
                 .andExpect(content().json(expectedJson));
-
+        verify(destinationService, times(1)).getDestinationById(eq(id));
     }
 }
