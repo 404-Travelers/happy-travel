@@ -32,13 +32,8 @@ public class DestinationServiceTest {
     @InjectMocks
     private DestinationService destinationService;
 
-    private DestinationResponse destinationResponse;
-    private Destination destinationEntity;
-
     @BeforeEach
     void setUp() {
-        destinationResponse = new DestinationResponse();
-        destinationEntity = new Destination();
     }
 
     @AfterEach
@@ -48,9 +43,10 @@ public class DestinationServiceTest {
 
     @Test
     void getAllDestinations_whenDestinationsExist_returnsListOfDestinationsResponse() {
-        DestinationResponseShort destinationResponseShort = new DestinationResponseShort();
-        List<DestinationResponseShort> expectedResult = List.of(destinationResponse);
-        when(destinationRepository.findAll()).thenReturn(List.of(destinationResponseShort));
+        List<DestinationResponseShort> expectedResult = List.of(
+                new DestinationResponseShort());
+        when(destinationRepository.findAll()).thenReturn(List.of(
+                new DestinationResponseShort()));
 
         List<DestinationResponseShort> result = destinationService.getAllDestinations();
         assertEquals(expectedResult, result);
@@ -59,15 +55,19 @@ public class DestinationServiceTest {
 
     @Test
     void getDestinationById_whenDestinationExists_returnsDestination() {
-        when(destinationRepository.findById(eq(id))).thenReturn(Optional.of(destinationEntityRepo));
+        Long id = 1L;
+        Destination expectedResult = new Destination();
+        when(destinationRepository.findById(eq(id))).thenReturn(Optional.of(
+                new Destination()));
 
         Destination result = destinationService.getDestinationById(id);
-        assertEquals(destinationEntity, result);
+        assertEquals(expectedResult, result);
         verify(destinationRepository, times(1)).findById(id);
     }
 
     @Test
     void getDestinationById_whenDestinationDoesNotExist_returnsException() {
+        Long id = 1L;
         Exception expectedException = new EntityNotFoundException(Destination.class.getSimpleName(), "id", id.toString());
         when(destinationRepository.findById(eq(id))).thenReturn(Optional.empty());
 
@@ -79,10 +79,13 @@ public class DestinationServiceTest {
     @Test
     void getDestinationsByUserId_whenDestinationExists_returnsDestinationsList() {
         Long userId = 1L;
-        when(destinationRepository.findByUserId(eq(userId))).thenReturn(Optional.of(List.of(destinationEntity)));
+        List<DestinationResponse> expectedResult = List.of(
+                new DestinationResponseShort());
+        when(destinationRepository.findByUserId(eq(userId))).thenReturn(Optional.of(List.of(
+                new Destination())));
 
-        List<Destination> result = destinationService.getDestinationByUserId(userId);
-        assertEquals(List.of(destinationEntityRepo), result);
+        List<DestinationResponse> result = destinationService.getDestinationByUserId(userId);
+        assertEquals(expectedResult, result);
         verify(destinationRepository, times(1)).findByUserId(userId);
     }
 
@@ -100,21 +103,21 @@ public class DestinationServiceTest {
     @Test
     void addDestination_whenDestinationIsNewForUser_returnsDestinationResponse(){
         DestinationRequest destinationRequest = new DestinationRequest();
-        DestinationResponse destinationResponse = new DestinationResponse();
-        Destination destination = new Destination();
-        when(destinationRepository.save(any(Destination.class))).thenReturn(destination);
+        DestinationResponse expectedResult = new DestinationResponse();
+        when(destinationRepository.save(any(Destination.class))).thenReturn(
+                new Destination());
 
         DestinationResponse result = destinationService.addDestination(destinationRequest);
-        assertEquals(destinationResponse, result);
+        assertEquals(expectedResult, result);
         verify(destinationRepository, times(1)).save(destination);
     }
 
     @Test
     void addDestination_whenDestinationAlreadyExistsForUser_returnsException(){
         DestinationRequest destinationRequest = new DestinationRequest();
-        Destination destination = new Destination();
         String expectedMessage = "Destination with city City and country Country for user " + username + " already exists";
-        when(destinationRepository.findByUserIdAndCityAndCountry(anyString())).thenReturn(Optional.of(destination));
+        when(destinationRepository.findByUserIdAndCityAndCountry(anyString())).thenReturn(Optional.of(
+                new Destination()));
 
         Exception exception = assertThrows(EntityAlreadyExistsException.class, () -> destinationService.addDestination(destinationRequest));
         assertEquals(expectedMessage, exception.getMessage());
@@ -124,12 +127,12 @@ public class DestinationServiceTest {
     @Test
     void updateDestination_whenDestinationUpdateIsSuccessful_returnsDestinationResponse(){
         DestinationRequest destinationRequest = new DestinationRequest();
-        DestinationResponse destinationResponse = new DestinationResponse();
-        Destination destination = new Destination();
-        when(destinationRepository.save(any(Destination.class))).thenReturn(destination);
+        DestinationResponse expectedResult = new DestinationResponse();
+        when(destinationRepository.save(any(Destination.class))).thenReturn(
+                new Destination());
 
         DestinationResponse result = destinationService.updateDestination(destinationRequest);
-        assertEquals(destinationResponse, result);
+        assertEquals(expectedResult, result);
         verify(destinationRepository, times(1)).save(destination);
     }
 
@@ -156,7 +159,7 @@ public class DestinationServiceTest {
         String result = destinationService.deleteDestination(id);
         assertEquals(expectedMessage, result);
         verify(destinationRepository, times(1)).findById(id);
-        verify(destinationRepository, times(1)).deleteById(destination);
+        verify(destinationRepository, times(1)).deleteById(id);
     }
 
     @Test
