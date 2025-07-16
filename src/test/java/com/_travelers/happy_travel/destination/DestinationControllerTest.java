@@ -1,11 +1,15 @@
 package com._travelers.happy_travel.destination;
 
+import com._travelers.happy_travel.destinations.Destination;
 import com._travelers.happy_travel.destinations.DestinationService;
 import com._travelers.happy_travel.destinations.dto.DestinationResponse;
 import com._travelers.happy_travel.destinations.dto.DestinationResponseShort;
+import com._travelers.happy_travel.exceptions.EntityNotFoundException;
+import com._travelers.happy_travel.exceptions.ErrorResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -15,9 +19,13 @@ import org.springframework.test.web.servlet.MockMvc;
 
 
 import java.util.List;
+import java.util.Objects;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -47,18 +55,40 @@ public class DestinationControllerTest{
         mockMvc.perform(get("/destinations").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().json(expectedJson));
+
+//        verify(destinationService, times(1)).getAllDestinations();
     }
 
     @Test
-    void getDestinationById_whenDestinationsExist_returnsListOfDestinationsResponse() throws Exception {
+    void getDestinationById_whenDestinationExist_returnsDestinationResponse() throws Exception {
         Long id = 1L;
         DestinationResponse serviceResult = new DestinationResponse();
         String expectedJson = objectMapper.writeValueAsString(new DestinationResponse());
-        given(destinationService.getDestinationById(eq(id))).willReturn(serviceResult);
+        given(DestinationService.getDestinationById(eq(id))).willReturn(serviceResult);
 
-        mockMvc.perform(get("/destinations/{id}", id))
-                .accept(MediaType.APPLICATION_JSON)
+        mockMvc.perform(get("/destinations/{id}", id)
+                    .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().json(expectedJson));
+    }
+
+    @Test
+    void getDestinationById_whenDestinationDoesNotExist_returnsException() throws Exception {
+        Long id = 1L;
+        EntityNotFoundException exception = new EntityNotFoundException(Destination.class.getSimpleName(), "id", id.toString());
+        String expectedJson = objectMapper.writeValueAsString(new ErrorResponse
+                        (
+//                HttpStatus.NOT_FOUND,
+//                exception.getMessage(),
+//                "http://localhost/api/categories/1"
+                        )
+        );
+        doThrow(new EntityNotFoundException(Destination.class.getSimpleName(), "id", id.toString())).when(destinationService.getDestinationById(eq(id)));
+
+        mockMvc.perform(get("/destinations/{id}", id))
+                .andExpect(status().isNotFound())
+                .andExpect(result -> assertEquals(Objects.requireNonNull(result.getResolvedException()).getMessage(), exception.getMessage()))
+                .andExpect(content().json(expectedJson));
+
     }
 }
