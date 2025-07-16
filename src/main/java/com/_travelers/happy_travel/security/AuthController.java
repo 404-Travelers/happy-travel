@@ -3,7 +3,8 @@ package com._travelers.happy_travel.security;
 import com._travelers.happy_travel.security.jwt.JwtResponse;
 import com._travelers.happy_travel.security.jwt.JwtService;
 import com._travelers.happy_travel.users.UserService;
-import com._travelers.happy_travel.users.dto.UserRequest;
+import com._travelers.happy_travel.users.dto.UserLoginRequest;
+import com._travelers.happy_travel.users.dto.UserRegisterRequest;
 import com._travelers.happy_travel.users.dto.UserResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -18,32 +19,25 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class AuthController {
     private final UserService userService;
-    private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
 
-    public AuthController(UserService userService, AuthenticationManager authenticationManager, JwtService jwtService) {
+    public AuthController(UserService userService, JwtService jwtService) {
         this.userService = userService;
-        this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
     }
 
     @PostMapping("/register")
-    public ResponseEntity<UserResponse> register(@RequestBody @Valid UserRequest userRequest) {
-        UserRequest userRequestWithRolByDefault = new UserRequest(userRequest.username(), userRequest.password(), "ROLE_USER");
+    public ResponseEntity<UserResponse> register(@RequestBody @Valid UserRegisterRequest userRegisterRequest) {
+        //Put into the service
+        //UserRegisterRequest userRequestWithRolByDefault = new UserRegisterRequest(userRegisterRequest.username(), userRegisterRequest.password(), "ROLE_USER");
 
-        UserResponse userResponse = userService.addUser(userRequestWithRolByDefault);
+        UserResponse userResponse = userService.addUser(userRegisterRequest);
         return new ResponseEntity<>(userResponse, HttpStatus.CREATED);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<JwtResponse> login(@RequestBody UserRequest userRequest) {
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userRequest.username(), userRequest.password()));
-
-        CustomUserDetail userDetail = (CustomUserDetail) authentication.getPrincipal();
-
-        String token = jwtService.generateToken(userDetail);
-
-        JwtResponse jwtResponse = new JwtResponse(token);
+    public ResponseEntity<JwtResponse> login(@RequestBody UserLoginRequest userLoginRequest) {
+        JwtResponse jwtResponse = jwtService.loginAuthentication(userLoginRequest);
         return new ResponseEntity<>(jwtResponse, HttpStatus.OK);
     }
 }
