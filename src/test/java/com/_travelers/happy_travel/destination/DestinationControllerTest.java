@@ -128,7 +128,7 @@ public class DestinationControllerTest{
                 .andExpect(content().json(expectedJson));
     }
 
-        @Test
+    @Test
     void updateDestination_whenRequestIsValid_returnsDestinationResponseEntity() throws Exception {
         DestinationRequest destinationRequest = new DestinationRequest();
         String jsonRequest = objectMapper.writeValueAsString(new DestinationRequest());
@@ -136,12 +136,27 @@ public class DestinationControllerTest{
         String expectedJson = objectMapper.writeValueAsString(new DestinationResponse());
         given(destinationService.updateDestination(eq(destinationRequest))).willReturn(serviceResult);
 
-        mockMvc.perform(post("/destinations")
+        mockMvc.perform(put("/destinations")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(jsonRequest))
                 .andExpect(status().isOk())
                 .andExpect(content().json(expectedJson));
 
         verify(destinationService, times(1)).updateDestination(eq(destinationRequest));
+    }
+
+    @Test
+    void updateDestination_whenRequestIsInvalid_returnsException() throws Exception {
+        String jsonInvalidRequest = objectMapper.writeValueAsString(new DestinationRequest());
+        String message = "Destination city must contain min 2 and max 50 characters";
+        String expectedJson = new ObjectMapper().writeValueAsString(
+                new HashMap<String, String>() {{put("city", message);}}
+        );
+
+        mockMvc.perform(put("/destinations")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(jsonInvalidRequest))
+                .andExpect(status().isConflict())
+                .andExpect(content().json(expectedJson));
     }
 }
