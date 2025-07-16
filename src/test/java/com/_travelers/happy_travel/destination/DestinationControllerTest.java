@@ -2,6 +2,7 @@ package com._travelers.happy_travel.destination;
 
 import com._travelers.happy_travel.destinations.Destination;
 import com._travelers.happy_travel.destinations.DestinationService;
+import com._travelers.happy_travel.destinations.dto.DestinationRequest;
 import com._travelers.happy_travel.destinations.dto.DestinationResponse;
 import com._travelers.happy_travel.destinations.dto.DestinationResponseShort;
 import com._travelers.happy_travel.exceptions.EntityNotFoundException;
@@ -70,7 +71,7 @@ public class DestinationControllerTest{
         Long id = 1L;
         DestinationResponse serviceResult = new DestinationResponse();
         String expectedJson = objectMapper.writeValueAsString(new DestinationResponse());
-        given(DestinationService.getDestinationById(eq(id))).willReturn(serviceResult);
+        given(destinationService.getDestinationById(eq(id))).willReturn(serviceResult);
 
         mockMvc.perform(get("/destinations/{id}", id)
                     .accept(MediaType.APPLICATION_JSON))
@@ -98,5 +99,22 @@ public class DestinationControllerTest{
                 .andExpect(result -> assertEquals(Objects.requireNonNull(result.getResolvedException()).getMessage(), exception.getMessage()))
                 .andExpect(content().json(expectedJson));
         verify(destinationService, times(1)).getDestinationById(eq(id));
+    }
+
+    @Test
+    void addDestination_whenRequestIsValid_returnsDestinationResponse() throws Exception {
+        DestinationRequest destinationRequest = new DestinationRequest();
+        String jsonRequest = objectMapper.writeValueAsString(new DestinationRequest());
+        DestinationResponse serviceResult = new DestinationResponse();
+        String expectedJson = objectMapper.writeValueAsString(new DestinationResponse());
+        given(destinationService.addDestination(eq(destinationRequest))).willReturn(serviceResult);
+
+        mockMvc.perform(post("/destinations")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(jsonRequest))
+                .andExpect(status().isOk())
+                .andExpect(content().json(expectedJson));
+
+        verify(destinationService, times(1)).addDestination(eq(destinationRequest));
     }
 }
