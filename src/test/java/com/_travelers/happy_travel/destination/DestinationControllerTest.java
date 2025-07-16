@@ -55,7 +55,7 @@ public class DestinationControllerTest{
     }
 
     @Test
-    void getAllDestinations_whenDestinationsExist_returnsListOfDestinationsResponseShort() throws Exception {
+    void getAllDestinations_whenRequestIsValid_returnsListOfDestinationsResponseShortEntity() throws Exception {
         List<DestinationResponseShort> serviceResult = List.of(new DestinationResponseShort());
         String expectedJson = objectMapper.writeValueAsString(List.of(new DestinationResponseShort()));
         given(destinationService.getAllDestinations()).willReturn(serviceResult);
@@ -68,7 +68,7 @@ public class DestinationControllerTest{
     }
 
     @Test
-    void getDestinationById_whenDestinationExist_returnsDestinationResponse() throws Exception {
+    void getDestinationById_whenRequestIsValid_returnsDestinationResponseEntity() throws Exception {
         Long id = 1L;
         DestinationResponse serviceResult = new DestinationResponse();
         String expectedJson = objectMapper.writeValueAsString(new DestinationResponse());
@@ -83,27 +83,21 @@ public class DestinationControllerTest{
     }
 
     @Test
-    void getDestinationById_whenDestinationDoesNotExist_returnsException() throws Exception {
-        Long id = 1L;
-        EntityNotFoundException exception = new EntityNotFoundException(Destination.class.getSimpleName(), "id", id.toString());
-        String expectedJson = objectMapper.writeValueAsString(new ErrorResponse
-                        (
-//                HttpStatus.NOT_FOUND,
-//                exception.getMessage(),
-//                "http://localhost/api/categories/1"
-                        )
+    void getDestinationById_whenRequestIsInvalid_returnsException() throws Exception {
+        Long id = -7L;
+        String message = "Destination id must be a positive number";
+        String expectedJson = new ObjectMapper().writeValueAsString(
+                new HashMap<String, String>() {{put("city", message);}}
         );
-        doThrow(new EntityNotFoundException(Destination.class.getSimpleName(), "id", id.toString())).when(destinationService.getDestinationById(eq(id)));
 
         mockMvc.perform(get("/destinations/{id}", id))
                 .andExpect(status().isNotFound())
-                .andExpect(result -> assertEquals(Objects.requireNonNull(result.getResolvedException()).getMessage(), exception.getMessage()))
+                .andExpect(result -> assertEquals(Objects.requireNonNull(result.getResolvedException()).getMessage(), expectedJson))
                 .andExpect(content().json(expectedJson));
-        verify(destinationService, times(1)).getDestinationById(eq(id));
     }
 
     @Test
-    void addDestination_whenRequestIsValid_returnsDestinationResponse() throws Exception {
+    void addDestination_whenRequestIsValid_returnsDestinationResponseEntity() throws Exception {
         DestinationRequest destinationRequest = new DestinationRequest();
         String jsonRequest = objectMapper.writeValueAsString(new DestinationRequest());
         DestinationResponse serviceResult = new DestinationResponse();
@@ -119,8 +113,8 @@ public class DestinationControllerTest{
         verify(destinationService, times(1)).addDestination(eq(destinationRequest));
     }
 
-        @Test
-    void addDestination_whenRequestIsInvalid_returnsDestinationResponse() throws Exception {
+    @Test
+    void addDestination_whenRequestIsInvalid_returnsException() throws Exception {
         String jsonInvalidRequest = objectMapper.writeValueAsString(new DestinationRequest());
         String message = "Destination city must contain min 2 and max 50 characters";
         String expectedJson = new ObjectMapper().writeValueAsString(
