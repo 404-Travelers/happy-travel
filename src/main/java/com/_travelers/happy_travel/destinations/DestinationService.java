@@ -6,6 +6,7 @@ import com._travelers.happy_travel.exceptions.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class DestinationService {
@@ -17,7 +18,8 @@ public class DestinationService {
 
     public List<DestinationResponse> getAllDestinations(){
         List<Destination> destinations = destinationRepository.findAll();
-        return destinations.stream().map(destination -> DestinationMapper.toDto(destination, destination.getUser())).toList();
+        return destinations.stream().map(destination -> DestinationMapper.toDto(destination))
+                .collect(Collectors.toList());
     }
 
     // public List<DestinationResponse> getFilteredDestinations(){}
