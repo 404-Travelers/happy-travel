@@ -1,4 +1,8 @@
 package com._travelers.happy_travel.destinations;
 
-public interface DestinationRepository {
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface DestinationRepository extends JpaRepository<Destination, Long> {
 }
