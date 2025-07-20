@@ -3,6 +3,7 @@ package com._travelers.happy_travel.users;
 import com._travelers.happy_travel.users.dto.UserMapper;
 import com._travelers.happy_travel.users.dto.UserRegisterRequest;
 import com._travelers.happy_travel.users.dto.UserResponse;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -54,4 +55,5 @@ public class UserService {
         return UserMapper.toDto(updatedUser);
     }
 }
+
 
