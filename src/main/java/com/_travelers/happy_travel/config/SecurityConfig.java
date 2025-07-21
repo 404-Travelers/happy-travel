@@ -40,8 +40,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.GET, "/destinations").permitAll()
                         .requestMatchers( "/register", "/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/users").hasAnyRole("USER", "ADMIN")
-                        .anyRequest().authenticated()
+//                        .requestMatchers(HttpMethod.POST, "/users").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers( "/users").permitAll()
+                        .anyRequest().permitAll()
                 )
                 .httpBasic(Customizer.withDefaults())
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

@@ -3,6 +3,7 @@ package com._travelers.happy_travel.users;
 import com._travelers.happy_travel.users.dto.UserRegisterRequest;
 import com._travelers.happy_travel.users.dto.UserResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.constraints.Positive;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RequestBody;
 import jakarta.validation.Valid;
@@ -12,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/users")
 @RequiredArgsConstructor
 public class UserController {
 
@@ -22,10 +23,9 @@ public class UserController {
             summary = "Get user by ID",
             description = "Returns a user by ID. Throws error if not found."
     )
-
     @GetMapping("/{id}")
-    @PreAuthorize("#id == authentication.principal.id or hasAuthority('ROLE_ADMIN')")
-    public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
+//    @PreAuthorize("#id == authentication.principal.id or hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<UserResponse> getUserById(@PathVariable @Positive(message = "User id must be a positive number") Long id) {
         UserResponse user = userService.getUserByIdResponse(id);
         return ResponseEntity.ok(user);
     }
@@ -35,9 +35,9 @@ public class UserController {
         description = "Deletes user with given ID. Returns 204 if successful."
     )
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-        userService.deleteUser(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<String> deleteUser(@PathVariable @Positive(message = "User id must be a positive number") Long id) {
+        String message = userService.deleteUser(id);
+        return ResponseEntity.ok(message);
     }
 
     @Operation(

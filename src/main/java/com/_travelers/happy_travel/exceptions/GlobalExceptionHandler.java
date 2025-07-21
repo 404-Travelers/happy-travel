@@ -29,7 +29,7 @@ public class GlobalExceptionHandler {
             errors.put(fieldName, errorMessage);
         });
         HttpStatus status = HttpStatus.BAD_REQUEST;
-        ErrorResponse errorResponse =new ErrorResponse(status, exception.getMessage(), req);
+        ErrorResponse errorResponse = new ErrorResponse(status, "VALIDATION_ERROR", errors, req);
         return new ResponseEntity<>(errorResponse, status);
     }
 
