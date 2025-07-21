@@ -7,7 +7,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RequestBody;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,11 +24,12 @@ public class UserController {
     )
 
     @GetMapping("/{id}")
-//    @PreAuthorize("#username == authentication.name or hasRole('USER')")
+    @PreAuthorize("#id == authentication.principal.id or hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
         UserResponse user = userService.getUserById(id);
         return ResponseEntity.ok(user);
     }
+
     @Operation(
         summary = "Delete user by ID",
         description = "Deletes user with given ID. Returns 204 if successful."
