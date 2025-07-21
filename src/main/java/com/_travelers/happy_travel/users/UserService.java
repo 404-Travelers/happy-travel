@@ -1,6 +1,7 @@
 package com._travelers.happy_travel.users;
 
 
+import com._travelers.happy_travel.security.CustomUserDetail;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -9,6 +10,7 @@ import com._travelers.happy_travel.users.dto.UserRegisterRequest;
 import com._travelers.happy_travel.users.dto.UserResponse;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -16,11 +18,11 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final BCryptPasswordEncoder passwordEncoder;
 
     public UserResponse addUser(UserRegisterRequest request) {
         String encodedPassword = passwordEncoder.encode(request.password());
-        Role userRole = Role.USER;
+        Role userRole = Role.ROLE_USER;
         User user = UserMapper.toEntity(request, userRole);
         user.setPassword(encodedPassword);
         userRepository.save(user);
@@ -34,15 +36,18 @@ public class UserService implements UserDetailsService {
         return UserMapper.toDto(user);
     }
 
-    public UserResponse getUserByUsername(String username) {
-        User user = userRepository.findByUsername(username)
+    public User getUserByUsername(String username) {
+        return userRepository.findByUsername(username)
                 .orElseThrow(() -> new EntityNotFoundException("User with username " + username + " not found"));
-        return UserMapper.toDto(user);
+    }
+
+    public UserResponse getUserByUsernameResponse(String username) {
+        return UserMapper.toDto(getUserByUsername(username));
     }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return null;
+        return new CustomUserDetail(getUserByUsername(username));
     }
 
     public void deleteUser(Long id) {
