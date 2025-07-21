@@ -1,6 +1,7 @@
 package com._travelers.happy_travel.users;
 
 
+import com._travelers.happy_travel.exceptions.EntityAlreadyExistsException;
 import com._travelers.happy_travel.exceptions.EntityNotFoundException;
 import com._travelers.happy_travel.security.CustomUserDetail;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -20,6 +21,9 @@ public class UserService implements UserDetailsService {
     private final BCryptPasswordEncoder passwordEncoder;
 
     public UserResponse addUser(UserRegisterRequest request) {
+        if (userRepository.findByUsername(request.username()).isPresent()) {
+            throw new EntityAlreadyExistsException(User.class.getSimpleName(), "username", request.username());
+        }
         String encodedPassword = passwordEncoder.encode(request.password());
         Role userRole = Role.ROLE_USER;
         User user = UserMapper.toEntity(request, userRole);
@@ -62,6 +66,11 @@ public class UserService implements UserDetailsService {
 
     public UserResponse updateUser(Long id, UserRegisterRequest request) {
         User existingUser = getUserById(id);
+        if(!existingUser.getUsername().equals(request.username())) {
+            if (userRepository.findByUsername(request.username()).isPresent()) {
+                throw new EntityAlreadyExistsException(User.class.getSimpleName(), "username", request.username());
+            }
+        }
         existingUser.setUsername(request.username());
         existingUser.setEmail(request.email());
         existingUser.setPassword(passwordEncoder.encode(request.password()));
