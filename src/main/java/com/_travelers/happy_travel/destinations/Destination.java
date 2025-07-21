@@ -10,7 +10,6 @@ import lombok.*;
 @Entity
 @Builder
 @Table (name = "destinations")
-
 public class Destination {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

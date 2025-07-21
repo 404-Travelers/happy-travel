@@ -2,6 +2,7 @@ package com._travelers.happy_travel.destinations.dto;
 
 import com._travelers.happy_travel.destinations.Destination;
 import com._travelers.happy_travel.users.User;
+import com._travelers.happy_travel.users.dto.UserMapper;
 import com._travelers.happy_travel.users.dto.UserResponse;
 
 public class DestinationMapper {
@@ -15,12 +16,11 @@ public class DestinationMapper {
                 .build();
     }
     public static DestinationResponse toDto(Destination destination){
-        User user = destination.getUser();
-        UserResponse userDto = new User((user.getUsername(), user.getEmail(), user.getRole().name()));
+        UserResponse userDto = UserMapper.toDto(destination.getUser());
         return new DestinationResponse(destination.getCountry(), destination.getCity(), destination.getDescription(), destination.getImageUrl(), userDto);
     }
     public static DestinationResponseShort toDtoShort (Destination destination, User user){
-        UserResponse userDto = new UserResponse((user.getUsername(), user.getEmail(), user.getRole());
+        UserResponse userDto = UserMapper.toDto(destination.getUser());
         return new DestinationResponseShort(destination.getCountry(),destination.getCity(), destination.getImageUrl(), userDto);
     }
 }
