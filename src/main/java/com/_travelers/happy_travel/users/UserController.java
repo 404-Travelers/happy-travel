@@ -17,16 +17,16 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
-
-    @Operation(
-           summary = "Resister a new user",
-           description = "Creates a new user with default role 'USER'. Requires valid username, email, and password."
-            )
-    @PostMapping("/register")
-    public ResponseEntity<UserResponse> register(@RequestBody @Valid UserRegisterRequest userRegisterRequest) {
-        UserResponse createdUser = userService.addUser(userRegisterRequest);
-        return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
-    }
+//
+//    @Operation(
+//           summary = "Resister a new user",
+//           description = "Creates a new user with default role 'USER'. Requires valid username, email, and password."
+//            )
+//    @PostMapping("/register")
+//    public ResponseEntity<UserResponse> register(@RequestBody @Valid UserRegisterRequest userRegisterRequest) {
+//        UserResponse createdUser = userService.addUser(userRegisterRequest);
+//        return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
+//    }
 
     @Operation(
             summary = "Get user by ID",

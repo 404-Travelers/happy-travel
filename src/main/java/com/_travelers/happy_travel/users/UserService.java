@@ -20,29 +20,30 @@ public class UserService implements UserDetailsService {
 
     public UserResponse addUser(UserRegisterRequest request) {
         String encodedPassword = passwordEncoder.encode(request.password());
-
-        var user = UserMapper.toEntity(
-                new UserRegisterRequest(
-                        request.username(),
-                        request.email(),
-                        encodedPassword
-                )
-        );
-
-
+        Role userRole = Role.USER;
+        User user = UserMapper.toEntity(request, userRole);
+        user.setPassword(encodedPassword);
         userRepository.save(user);
         return UserMapper.toDto(user);
 
     }
+
     public UserResponse getUserById(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + id + " not found"));
         return UserMapper.toDto(user);
     }
 
+    public UserResponse getUserByUsername(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new EntityNotFoundException("User with username " + username + " not found"));
+        return UserMapper.toDto(user);
+    }
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return null;
+    }
 
     public void deleteUser(Long id) {
         if (!userRepository.existsById(id)) {
