@@ -1,6 +1,7 @@
 package com._travelers.happy_travel.users;
 
 
+import com._travelers.happy_travel.exceptions.EntityNotFoundException;
 import com._travelers.happy_travel.security.CustomUserDetail;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -8,10 +9,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import com._travelers.happy_travel.users.dto.UserMapper;
 import com._travelers.happy_travel.users.dto.UserRegisterRequest;
 import com._travelers.happy_travel.users.dto.UserResponse;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -30,15 +29,20 @@ public class UserService implements UserDetailsService {
 
     }
 
-    public UserResponse getUserById(Long id) {
+    public User getUserById(Long id) {
+         return userRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(User.class.getSimpleName(), "id", id.toString()));
+    }
+
+    public UserResponse getUserByIdResponse(Long id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("User with id " + id + " not found"));
+                .orElseThrow(() -> new EntityNotFoundException(User.class.getSimpleName(), "id", id.toString()));
         return UserMapper.toDto(user);
     }
 
     public User getUserByUsername(String username) {
         return userRepository.findByUsername(username)
-                .orElseThrow(() -> new EntityNotFoundException("User with username " + username + " not found"));
+                .orElseThrow(() -> new EntityNotFoundException(User.class.getSimpleName(), "username", username));
     }
 
     public UserResponse getUserByUsernameResponse(String username) {
@@ -50,24 +54,19 @@ public class UserService implements UserDetailsService {
         return new CustomUserDetail(getUserByUsername(username));
     }
 
-    public void deleteUser(Long id) {
-        if (!userRepository.existsById(id)) {
-            throw new EntityNotFoundException("User with id " + id + " not found");
-        }
+    public String deleteUser(Long id) {
+        getUserById(id);
         userRepository.deleteById(id);
+        return "User deleted successfully";
     }
 
     public UserResponse updateUser(Long id, UserRegisterRequest request) {
-        User existingUser = userRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("User with id " + id + " not found"));
-
+        User existingUser = getUserById(id);
         existingUser.setUsername(request.username());
         existingUser.setEmail(request.email());
-        existingUser.setPassword(passwordEncoder.encode(request.password())); // шифруем пароль
-
+        existingUser.setPassword(passwordEncoder.encode(request.password()));
         User updatedUser = userRepository.save(existingUser);
         return UserMapper.toDto(updatedUser);
-
     }
 }
 
