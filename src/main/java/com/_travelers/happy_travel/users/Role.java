@@ -4,13 +4,7 @@ import lombok.ToString;
 
 
 public enum Role {
-    USER,
-    ADMIN;
-
-
-    @Override
-    public String toString() {
-        return "ROLE_ " + this.name();
-    }
+    ROLE_USER,
+    ROLE_ADMIN;
 
 }
