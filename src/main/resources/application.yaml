@@ -1,4 +1,10 @@
 spring:
+#  security:
+#    user:
+#      name: testuser
+#      password: testpass
+#      roles: ROLE_USER
+
   output:
     ansi:
       enabled: ALWAYS
@@ -41,8 +47,8 @@ server:
   # Logging Configuration
 logging:
   level:
-    org:
-      hibernate:
+    org.springframework.security: TRACE
+    org.hibernate:
         SQL: DEBUG
         springframework: DEBUG
 #      com:
