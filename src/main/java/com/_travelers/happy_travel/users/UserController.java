@@ -3,6 +3,7 @@ package com._travelers.happy_travel.users;
 import com._travelers.happy_travel.users.dto.UserRegisterRequest;
 import com._travelers.happy_travel.users.dto.UserResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RequestBody;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,22 +18,14 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
-//
-//    @Operation(
-//           summary = "Resister a new user",
-//           description = "Creates a new user with default role 'USER'. Requires valid username, email, and password."
-//            )
-//    @PostMapping("/register")
-//    public ResponseEntity<UserResponse> register(@RequestBody @Valid UserRegisterRequest userRegisterRequest) {
-//        UserResponse createdUser = userService.addUser(userRegisterRequest);
-//        return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
-//    }
 
     @Operation(
             summary = "Get user by ID",
             description = "Returns a user by ID. Throws error if not found."
     )
+
     @GetMapping("/{id}")
+//    @PreAuthorize("#username == authentication.name or hasRole('USER')")
     public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
         UserResponse user = userService.getUserById(id);
         return ResponseEntity.ok(user);
