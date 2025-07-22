@@ -54,4 +54,23 @@ public class DestinationService {
         Destination savedDestination = destinationRepository.save(destination);
         return DestinationMapper.toDto(savedDestination);
     }
+
+    public DestinationResponse updateDestination(Long id, DestinationRequest request, User user) {
+        Destination destination = destinationRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Destination", "id", id.toString()));
+
+        if (!destination.getUser().getId().equals(user.getId())) {
+            return null;
+        }
+
+        destination.setCountry(request.country());
+        destination.setCity(request.city());
+        destination.setDescription(request.description());
+        destination.setImageUrl(request.imageUrl());
+
+        Destination updated = destinationRepository.save(destination);
+        return DestinationMapper.toDto(updated);
+    }
+
+
 }
