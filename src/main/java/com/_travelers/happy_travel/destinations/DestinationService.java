@@ -27,7 +27,26 @@ public class DestinationService {
                 .collect(Collectors.toList());
     }
 
-    // public List<DestinationResponse> getFilteredDestinations(){}
+    public List<DestinationResponse> getFilteredDestinations(String city, String country) {
+        List<Destination> filtered;
+
+        boolean cityIsEmpty = city == null || city.isBlank();
+        boolean countryIsEmpty = country == null || country.isBlank();
+
+        if (!cityIsEmpty && !countryIsEmpty) {
+            filtered = destinationRepository.findByCityContainingIgnoreCaseAndCountryContainingIgnoreCase(city, country);
+        } else if (!cityIsEmpty) {
+            filtered = destinationRepository.findByCityContainingIgnoreCase(city);
+        } else if (!countryIsEmpty) {
+            filtered = destinationRepository.findByCountryContainingIgnoreCase(country);
+        } else {
+            filtered = destinationRepository.findAll();
+        }
+
+        return filtered.stream()
+                .map(DestinationMapper::toDto)
+                .toList();
+    }
 
     public DestinationResponse getDestinationById(Long id){
         Destination destination = destinationRepository.findById(id)
