@@ -3,28 +3,28 @@ package com._travelers.happy_travel.exceptions;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.Builder;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
 import java.time.LocalDateTime;
 
-@Getter
-@JsonPropertyOrder({"timestamp", "status", "error", "message", "path"})
-public class ErrorResponse {
-    @JsonFormat(pattern="yyyy-MM-DD HH:mm:ss")
-    private final LocalDateTime timestamp;
-    private final int status;
-    private final String error;
-    private final String message;
-    private final String path;
+@Builder
+public record ErrorResponse
+        (@JsonFormat(pattern="yyyy-MM-DD HH:mm:ss")
+         LocalDateTime timestamp,
+         int status,
+         String error,
+         Object message,
+         String path){
 
-    public ErrorResponse(HttpStatus status,String message, String path){
-        this.timestamp = LocalDateTime.now();
-        this.status = status.value();
-        this.error = status.name();
-        this.message = message;
-        this.path = path;
+    public ErrorResponse (HttpStatus status, Object message, HttpServletRequest req){
+        this(LocalDateTime.now(), status.value(), status.name(), message, String.valueOf(req.getRequestURL()));
     }
 
+    public ErrorResponse (HttpStatus status, String error, Object message, HttpServletRequest req){
+        this(LocalDateTime.now(), status.value(), error, message, String.valueOf(req.getRequestURL()));
+    }
 
 }

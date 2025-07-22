@@ -1,4 +1,10 @@
 spring:
+#  security:
+#    user:
+#      name: testuser
+#      password: testpass
+#      roles: ROLE_USER
+
   output:
     ansi:
       enabled: ALWAYS
@@ -13,6 +19,7 @@ spring:
     username: ${DB_USER}
     password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
+#    initialization-mode: always
 
   # JPA Configuration
   jpa:
@@ -40,8 +47,8 @@ server:
   # Logging Configuration
 logging:
   level:
-    org:
-      hibernate:
+    org.springframework.security: TRACE
+    org.hibernate:
         SQL: DEBUG
         springframework: DEBUG
 #      com:

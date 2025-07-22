@@ -5,12 +5,12 @@ import com._travelers.happy_travel.users.Role;
 
 public class UserMapper {
 
-    public static User toEntity(UserRegisterRequest dto) {
+    public static User toEntity(UserRegisterRequest dto, Role role) {
         return User.builder()
                 .username(dto.username())
                 .email(dto.email())
                 .password(dto.password())
-                .role(Role.USER)
+                .role(role)
                 .build();
     }
 
