@@ -1,6 +1,7 @@
 package com._travelers.happy_travel.destinations;
 
 
+import com._travelers.happy_travel.destinations.dto.DestinationResponse;
 import com._travelers.happy_travel.destinations.dto.DestinationResponseShort;
 import com._travelers.happy_travel.users.UserService;
 import org.springframework.http.ResponseEntity;
@@ -33,5 +34,10 @@ public class DestinationController {
         return ResponseEntity.ok(list);
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<DestinationResponse> getDestinationById(@PathVariable Long id) {
+        DestinationResponse destination = destinationService.getDestinationById(id);
+        return ResponseEntity.ok(destination);
+    }
 
 }
