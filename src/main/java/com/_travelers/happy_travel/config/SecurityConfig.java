@@ -38,13 +38,19 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/swagger-resources/**",
+                                "/webjars/**"
+                        ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/destinations").permitAll()
                         .requestMatchers( "/register", "/login").permitAll()
 //                        .requestMatchers(HttpMethod.POST, "/users").hasAnyRole("USER", "ADMIN")
                         .requestMatchers( "/users").permitAll()
                         .anyRequest().permitAll()
                 )
-                .httpBasic(Customizer.withDefaults())
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
