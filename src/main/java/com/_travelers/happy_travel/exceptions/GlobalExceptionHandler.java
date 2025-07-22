@@ -1,6 +1,7 @@
 package com._travelers.happy_travel.exceptions;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -39,4 +40,19 @@ public class GlobalExceptionHandler {
         ErrorResponse errorResponse =new ErrorResponse(status, exception.getMessage(), req);
         return new ResponseEntity<>(errorResponse, status);
     }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponse> handleConstraintViolationExceptions(ConstraintViolationException exception, HttpServletRequest req) {
+        Map<String, String> errors = new HashMap<>();
+        exception.getConstraintViolations().forEach((error) -> {
+            String fieldName = error.getPropertyPath().toString();
+            String errorMessage = error.getMessage();
+            errors.put(fieldName, errorMessage);
+        });
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+        ErrorResponse errorResponse = new ErrorResponse(status, "CONSTRAINT_VIOLATION", errors, req);
+        return new ResponseEntity<>(errorResponse, status);
+    }
+
+    //@ExceptionHandler handleAllUnhandledExceptions(Exception): ResponseEntity<ErrorResponse, HttpsStatus>
 }
