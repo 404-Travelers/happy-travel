@@ -54,5 +54,17 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, status);
     }
 
-    //@ExceptionHandler handleAllUnhandledExceptions(Exception): ResponseEntity<ErrorResponse, HttpsStatus>
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleAllUnhandledExceptions(Exception exception, HttpServletRequest req) {
+        Map<String, String> errors = new HashMap<>();
+
+        String errorMessage = (exception.getMessage() != null) ? exception.getMessage() : "No detail available";
+        String errorCause = (exception.getCause() != null) ? exception.getCause().getMessage() : "";
+        errors.put(errorMessage, errorCause);
+
+        HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+        ErrorResponse errorResponse = new ErrorResponse(status, errors, req);
+        return new ResponseEntity<>(errorResponse, status);
+    }
+
 }
