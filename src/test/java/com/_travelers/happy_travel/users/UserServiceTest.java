@@ -201,7 +201,7 @@ void updateUser_whenUsernameChangedAndNotExists_returnsUpdatedUser() {
     void deleteUser_whenUserExists_returnsMessage() {
         Long id  = 1L;
         User user = new User();
-        String expectedMessage = "User deleted successfully";
+        String expectedMessage = "User with id " + id + " deleted successfully";
         when(userRepository.existsById(eq(id))).thenReturn(true);
         doNothing().when(userRepository).deleteById(eq(id));
         String result = userService.deleteUser(id);
@@ -211,7 +211,7 @@ void updateUser_whenUsernameChangedAndNotExists_returnsUpdatedUser() {
         verify(userRepository, times(1)).deleteById(id);
     }
 
-        @Test
+    @Test
     void deleteUser_whenUserDoesNotExist_returnsException() {
         Long id  = 1L;
         String expectedMessage = "User with id " + id + " not found";

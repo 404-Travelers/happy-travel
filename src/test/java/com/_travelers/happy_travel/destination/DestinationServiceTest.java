@@ -164,7 +164,7 @@ public class DestinationServiceTest {
         String expectedMessage = "Destination deleted successfully";
         when(destinationRepository.findById(eq(id))).thenReturn(Optional.of(destination));
 
-        String result = destinationService.deleteDestination(id);
+        String result = destinationService.deleteDestination(id, user);
         assertEquals(expectedMessage, result);
         verify(destinationRepository, times(1)).findById(id);
         verify(destinationRepository, times(1)).delete(any(Destination.class));
@@ -176,7 +176,7 @@ public class DestinationServiceTest {
         String expectedMessage = "Destination with id " + id + " not found";
         when(destinationRepository.findById(eq(id))).thenReturn(Optional.empty());
 
-        Exception exception = assertThrows(EntityNotFoundException.class, () -> destinationService.deleteDestination(id));
+        Exception exception = assertThrows(EntityNotFoundException.class, () -> destinationService.deleteDestination(id, user));
         assertEquals(expectedMessage, exception.getMessage());
         verify(destinationRepository, times(1)).findById(id);
     }
