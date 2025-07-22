@@ -24,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@WebMvcTest
 public class UserServiceTest {
     @Mock
     private UserRepository userRepository;
@@ -157,10 +158,12 @@ public class UserServiceTest {
         Long id = 10L;
         String expectedMessage = "User with id " + id + " not found";
         when(userRepository.findById(eq(id))).thenReturn(Optional.empty());
+//        when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
 
         Exception exception = assertThrows(EntityNotFoundException.class, () -> userService.updateOwnUser(id, userRegisterRequest));
         assertEquals(expectedMessage, exception.getMessage());
         verify(userRepository, times(1)).findById(id);
+//        verify(userRepository, times(1)).findByUsername(userRegisterRequest.username());
     }
 
     @Test
