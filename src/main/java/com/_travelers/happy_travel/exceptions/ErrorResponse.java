@@ -18,11 +18,11 @@ public record ErrorResponse
          String path){
 
     public ErrorResponse (HttpStatus status, Object message, HttpServletRequest req){
-        this(LocalDateTime.now(), status.value(), status.name(), message, String.valueOf(req.getRequestURL()));
+        this(LocalDateTime.now(), status.value(), status.name(), message, String.valueOf(req.getRequestURI()));
     }
 
     public ErrorResponse (HttpStatus status, String error, Object message, HttpServletRequest req){
-        this(LocalDateTime.now(), status.value(), error, message, String.valueOf(req.getRequestURL()));
+        this(LocalDateTime.now(), status.value(), error, message, String.valueOf(req.getRequestURI()));
     }
 
 }
