@@ -72,5 +72,15 @@ public class DestinationService {
         return DestinationMapper.toDto(updated);
     }
 
+    public String deleteDestination(Long id, User user) {
+        Destination destination = destinationRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Destination", "id", id.toString()));
 
+        if (!destination.getUser().getId().equals(user.getId())) {
+            return null;
+        }
+
+        destinationRepository.delete(destination);
+        return "Destination deleted successfully";
+    }
 }
