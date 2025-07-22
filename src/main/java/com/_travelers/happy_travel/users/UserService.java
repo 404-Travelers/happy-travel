@@ -14,15 +14,39 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
 
+    public List<UserResponse> getAllUsers() {
+    return userRepository.findAll()
+            .stream()
+            .map(UserMapper::toDto)
+            .toList();
+}
+
+    public UserResponse getUserById(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(User.class.getSimpleName(), "id", id.toString()));
+        return UserMapper.toDto(user);
+    }
+
+    public UserResponse getUserByUsername(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new EntityNotFoundException(User.class.getSimpleName(), "username", username));
+        return UserMapper.toDto(user);
+    }
+
     public UserResponse addUser(UserRegisterRequest request) {
-        if (userRepository.findByUsername(request.username()).isPresent()) {
+        if (userRepository.existsByUsername(request.username())) {
             throw new EntityAlreadyExistsException(User.class.getSimpleName(), "username", request.username());
+        }
+        if (userRepository.existsByEmail(request.email())) {
+            throw new EntityAlreadyExistsException(User.class.getSimpleName(), "email", request.email());
         }
         String encodedPassword = passwordEncoder.encode(request.password());
         Role userRole = Role.ROLE_USER;
@@ -30,42 +54,11 @@ public class UserService implements UserDetailsService {
         user.setPassword(encodedPassword);
         userRepository.save(user);
         return UserMapper.toDto(user);
-
-    }
-
-    public User getUserById(Long id) {
-         return userRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(User.class.getSimpleName(), "id", id.toString()));
-    }
-
-    public UserResponse getUserByIdResponse(Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(User.class.getSimpleName(), "id", id.toString()));
-        return UserMapper.toDto(user);
-    }
-
-    public User getUserByUsername(String username) {
-        return userRepository.findByUsername(username)
-                .orElseThrow(() -> new EntityNotFoundException(User.class.getSimpleName(), "username", username));
-    }
-
-    public UserResponse getUserByUsernameResponse(String username) {
-        return UserMapper.toDto(getUserByUsername(username));
-    }
-
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return new CustomUserDetail(getUserByUsername(username));
-    }
-
-    public String deleteUser(Long id) {
-        getUserById(id);
-        userRepository.deleteById(id);
-        return "User deleted successfully";
     }
 
     public UserResponse updateUser(Long id, UserRegisterRequest request) {
-        User existingUser = getUserById(id);
+        User existingUser = userRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(User.class.getSimpleName(), "id", id.toString()));
         if(!existingUser.getUsername().equals(request.username())) {
             if (userRepository.findByUsername(request.username()).isPresent()) {
                 throw new EntityAlreadyExistsException(User.class.getSimpleName(), "username", request.username());
@@ -77,6 +70,18 @@ public class UserService implements UserDetailsService {
         User updatedUser = userRepository.save(existingUser);
         return UserMapper.toDto(updatedUser);
     }
+
+    public String deleteUser(Long id) {
+        if(!userRepository.existsById(id)) {
+            throw  new EntityNotFoundException(User.class.getSimpleName(), "id", id.toString());
+        }
+        userRepository.deleteById(id);
+        return "User deleted successfully";
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return new CustomUserDetail(userRepository.findByUsername(username)
+                .orElseThrow(() -> new EntityNotFoundException(User.class.getSimpleName(), "username", username)));
+    }
 }
-
-

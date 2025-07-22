@@ -82,14 +82,14 @@ public class UserControllerTest{
     void getUserById_whenRequestIsValid_returnsUserResponseEntity() throws Exception {
         Long id = 1L;
         String expectedJson = objectMapper.writeValueAsString(userResponse);
-        given(userService.getUserByIdResponse(eq(id))).willReturn(userResponse);
+        given(userService.getUserById(eq(id))).willReturn(userResponse);
 
         mockMvc.perform(get("/users/{id}", id)
                     .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().json(expectedJson));
 
-        verify(userService, times(1)).getUserByIdResponse(eq(id));
+        verify(userService, times(1)).getUserById(eq(id));
     }
 
 //    @Test

@@ -26,7 +26,7 @@ public class UserController {
     @GetMapping("/{id}")
 //    @PreAuthorize("#id == authentication.principal.id or hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<UserResponse> getUserById(@PathVariable @Positive(message = "User id must be a positive number") Long id) {
-        UserResponse user = userService.getUserByIdResponse(id);
+        UserResponse user = userService.getUserById(id);
         return ResponseEntity.ok(user);
     }
 
