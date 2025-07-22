@@ -3,28 +3,26 @@ package com._travelers.happy_travel.destinations;
 import com._travelers.happy_travel.destinations.dto.DestinationMapper;
 import com._travelers.happy_travel.destinations.dto.DestinationRequest;
 import com._travelers.happy_travel.destinations.dto.DestinationResponse;
+import com._travelers.happy_travel.destinations.dto.DestinationResponseShort;
 import com._travelers.happy_travel.exceptions.EntityNotFoundException;
 import com._travelers.happy_travel.users.User;
 import com._travelers.happy_travel.users.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class DestinationService {
     private final DestinationRepository destinationRepository;
     private final UserRepository userRepository;
 
-    public DestinationService(DestinationRepository destinationRepository, UserRepository userRepository) {
-        this.destinationRepository = destinationRepository;
-        this.userRepository = userRepository;
-    }
-
-    public List<DestinationResponse> getAllDestinations(){
+    public List<DestinationResponseShort> getAllDestinations(){
         List<Destination> destinations = destinationRepository.findAll();
-        return destinations.stream().map(destination -> DestinationMapper.toDto(destination))
-                .collect(Collectors.toList());
+        return destinations.stream().map(DestinationMapper::toDtoShort)
+                .toList();
     }
 
     public List<DestinationResponse> getFilteredDestinations(String city, String country) {
@@ -54,7 +52,7 @@ public class DestinationService {
         return DestinationMapper.toDto(destination);
     }
 
-    public List<DestinationResponse> getDestinationByUserId(Long userId){
+    public List<DestinationResponse> getDestinationsByUserId(Long userId){
         List<Destination> destinations = destinationRepository.findAll()
                 .stream()
                 .filter(destination->destination.getUser() != null && destination.getUser().getId().equals(userId))
@@ -78,9 +76,9 @@ public class DestinationService {
         Destination destination = destinationRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Destination", "id", id.toString()));
 
-        if (!destination.getUser().getId().equals(user.getId())) {
-            return null;
-        }
+//        if (!destination.getUser().getId().equals(user.getId())) {
+//            return null;
+//        }
 
         destination.setCountry(request.country());
         destination.setCity(request.city());
@@ -91,13 +89,13 @@ public class DestinationService {
         return DestinationMapper.toDto(updated);
     }
 
-    public String deleteDestination(Long id, User user) {
+    public String deleteDestination(Long id) {
         Destination destination = destinationRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Destination", "id", id.toString()));
 
-        if (!destination.getUser().getId().equals(user.getId())) {
-            return null;
-        }
+//        if (!destination.getUser().getId().equals(user.getId())) {
+//            return null;
+//        }
 
         destinationRepository.delete(destination);
         return "Destination deleted successfully";
