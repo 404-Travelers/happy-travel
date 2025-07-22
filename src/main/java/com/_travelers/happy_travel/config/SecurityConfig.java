@@ -45,11 +45,12 @@ public class SecurityConfig {
                                 "/swagger-resources/**",
                                 "/webjars/**"
                         ).permitAll()
-                        .requestMatchers(HttpMethod.GET, "/destinations").permitAll()
                         .requestMatchers( "/register", "/login").permitAll()
-//                        .requestMatchers(HttpMethod.POST, "/users").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/destinations").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/destinations/{id}").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/users").hasRole("ADMIN")
                         .requestMatchers( "/users").permitAll()
-                        .anyRequest().permitAll()
+                        .anyRequest().authenticated()
                 )
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
