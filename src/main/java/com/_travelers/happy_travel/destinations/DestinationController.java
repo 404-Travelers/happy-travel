@@ -3,8 +3,11 @@ package com._travelers.happy_travel.destinations;
 
 import com._travelers.happy_travel.destinations.dto.DestinationResponse;
 import com._travelers.happy_travel.destinations.dto.DestinationResponseShort;
+import com._travelers.happy_travel.users.User;
 import com._travelers.happy_travel.users.UserService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -38,6 +41,13 @@ public class DestinationController {
     public ResponseEntity<DestinationResponse> getDestinationById(@PathVariable Long id) {
         DestinationResponse destination = destinationService.getDestinationById(id);
         return ResponseEntity.ok(destination);
+    }
+
+    @GetMapping("/user")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<DestinationResponse>> getDestinationsByUser(@AuthenticationPrincipal User user) {
+        List<DestinationResponse> list = destinationService.getDestinationByUserId(user.getId());
+        return ResponseEntity.ok(list);
     }
 
 }
