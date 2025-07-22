@@ -59,4 +59,17 @@ public class DestinationController {
         DestinationResponse created = destinationService.addDestination(request, user);
         return ResponseEntity.ok(created);
     }
+
+    @PutMapping("/user/{id}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<DestinationResponse> updateDestination(
+            @AuthenticationPrincipal User user,
+            @PathVariable Long id,
+            @RequestBody DestinationRequest request) {
+        DestinationResponse updated = destinationService.updateDestination(id, request, user);
+        if (updated == null) {
+            return ResponseEntity.status(403).build();
+        }
+        return ResponseEntity.ok(updated);
+    }
 }
