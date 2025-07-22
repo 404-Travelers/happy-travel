@@ -19,7 +19,7 @@ public class DestinationMapper {
         UserResponse userDto = UserMapper.toDto(destination.getUser());
         return new DestinationResponse(destination.getCountry(), destination.getCity(), destination.getDescription(), destination.getImageUrl(), userDto);
     }
-    public static DestinationResponseShort toDtoShort (Destination destination, User user){
+    public static DestinationResponseShort toDtoShort (Destination destination){
         UserResponse userDto = UserMapper.toDto(destination.getUser());
         return new DestinationResponseShort(destination.getCountry(),destination.getCity(), destination.getImageUrl(), userDto);
     }
