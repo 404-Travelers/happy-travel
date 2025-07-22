@@ -72,4 +72,16 @@ public class DestinationController {
         }
         return ResponseEntity.ok(updated);
     }
+
+    @DeleteMapping("/user/{id}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<String> deleteDestination(
+            @AuthenticationPrincipal User user,
+            @PathVariable Long id) {
+        String message = destinationService.deleteDestination(id, user);
+        if (message == null) {
+            return ResponseEntity.status(403).build();
+        }
+        return ResponseEntity.ok(message);
+    }
 }
