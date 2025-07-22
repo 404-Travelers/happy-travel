@@ -1,6 +1,7 @@
 package com._travelers.happy_travel.destinations;
 
 
+import com._travelers.happy_travel.destinations.dto.DestinationRequest;
 import com._travelers.happy_travel.destinations.dto.DestinationResponse;
 import com._travelers.happy_travel.destinations.dto.DestinationResponseShort;
 import com._travelers.happy_travel.users.User;
@@ -45,9 +46,17 @@ public class DestinationController {
 
     @GetMapping("/user")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<DestinationResponse>> getDestinationsByUser(@AuthenticationPrincipal User user) {
+    public ResponseEntity<List<DestinationResponse>> getDestinationsByUserId(@AuthenticationPrincipal User user) {
         List<DestinationResponse> list = destinationService.getDestinationByUserId(user.getId());
         return ResponseEntity.ok(list);
     }
 
+    @PostMapping("/user")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<DestinationResponse> addDestination(
+            @AuthenticationPrincipal User user,
+            @RequestBody DestinationRequest request) {
+        DestinationResponse created = destinationService.addDestination(request, user);
+        return ResponseEntity.ok(created);
+    }
 }
