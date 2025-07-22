@@ -56,6 +56,21 @@ public class UserService implements UserDetailsService {
         return UserMapper.toDto(user);
     }
 
+    public UserResponse addAdmin(UserRegisterRequest request) {
+        if (userRepository.existsByUsername(request.username())) {
+            throw new EntityAlreadyExistsException(User.class.getSimpleName(), "username", request.username());
+        }
+        if (userRepository.existsByEmail(request.email())) {
+            throw new EntityAlreadyExistsException(User.class.getSimpleName(), "email", request.email());
+        }
+        String encodedPassword = passwordEncoder.encode(request.password());
+        Role userRole = Role.ROLE_ADMIN;
+        User user = UserMapper.toEntity(request, userRole);
+        user.setPassword(encodedPassword);
+        userRepository.save(user);
+        return UserMapper.toDto(user);
+    }
+
     public UserResponse updateUser(Long id, UserRegisterRequest request) {
         User existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(User.class.getSimpleName(), "id", id.toString()));
