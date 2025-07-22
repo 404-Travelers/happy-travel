@@ -47,7 +47,7 @@ public class DestinationController {
     @GetMapping("/user")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<DestinationResponse>> getDestinationsByUserId(@AuthenticationPrincipal User user) {
-        List<DestinationResponse> list = destinationService.getDestinationByUserId(user.getId());
+        List<DestinationResponse> list = destinationService.getDestinationsByUserId(user.getId());
         return ResponseEntity.ok(list);
     }
 
