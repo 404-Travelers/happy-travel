@@ -26,7 +26,7 @@ public class UserController {
             description = "Returns all users. Throws error if not found."
     )
     @GetMapping("")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+//    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<List<UserResponse>> getAllUsers() {
         List<UserResponse> users = userService.getAllUsers();
         return ResponseEntity.ok(users);
@@ -37,7 +37,7 @@ public class UserController {
             description = "Returns a user by ID. Throws error if not found."
     )
     @GetMapping("/{id}")
-    @PreAuthorize("#id == authentication.principal.id or hasAuthority('ROLE_ADMIN')")
+//    @PreAuthorize("#id == authentication.principal.id or hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<UserResponse> getUserById(@PathVariable @Positive(message = "User id must be a positive number") Long id) {
         UserResponse user = userService.getUserById(id);
         return ResponseEntity.ok(user);

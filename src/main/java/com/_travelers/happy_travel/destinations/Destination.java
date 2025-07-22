@@ -4,12 +4,14 @@ import com._travelers.happy_travel.users.User;
 import jakarta.persistence.*;
 import lombok.*;
 
-@Data
+@Entity
+@Table(name = "destinations")
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
 @Builder
-@Table (name = "destinations")
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Destination {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

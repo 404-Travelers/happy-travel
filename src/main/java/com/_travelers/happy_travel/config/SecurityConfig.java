@@ -48,9 +48,9 @@ public class SecurityConfig {
                         .requestMatchers( "/register", "/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/destinations").permitAll()
                         .requestMatchers(HttpMethod.GET, "/destinations/{id}").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/users").hasRole("ADMIN")
+//                        .requestMatchers(HttpMethod.GET, "/users").hasRole("ADMIN")
                         .requestMatchers( "/users").permitAll()
-                        .anyRequest().authenticated()
+                        .anyRequest().permitAll()
                 )
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

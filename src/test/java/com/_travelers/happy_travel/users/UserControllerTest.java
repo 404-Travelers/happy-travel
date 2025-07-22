@@ -65,18 +65,17 @@ public class UserControllerTest{
         verifyNoMoreInteractions(userService);
     }
 
-//    @Test
-//    void getAllUsers_whenRequestIsValid_returnsListOfUsersResponseShortEntity() throws Exception {
-//        List<UserResponse> serviceResult = List.of(new UserResponse());
-//        String expectedJson = objectMapper.writeValueAsString(List.of(new UserResponse()));
-//        given(userService.getAllUsers()).willReturn(serviceResult);
-//
-//        mockMvc.perform(get("/users").accept(MediaType.APPLICATION_JSON))
-//                .andExpect(status().isOk())
-//                .andExpect(content().json(expectedJson));
-//
-//        verify(userService, times(1)).getAllUsers();
-//    }
+    @Test
+    void getAllUsers_whenRequestIsValid_returnsListOfUsersResponseShortEntity() throws Exception {
+        String expectedJson = objectMapper.writeValueAsString(List.of(userResponse));
+        given(userService.getAllUsers()).willReturn(List.of(userResponse));
+
+        mockMvc.perform(get("/users").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().json(expectedJson));
+
+        verify(userService, times(1)).getAllUsers();
+    }
 
     @Test
     void getUserById_whenRequestIsValid_returnsUserResponseEntity() throws Exception {
@@ -158,7 +157,7 @@ public class UserControllerTest{
         errors.put("username", "Username must be between 3 and 50 characters");
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .error("VALIDATION_ERROR")
-                .path("http://localhost/users/1")
+                .path("/users/1")
                 .timestamp(LocalDateTime.now())
                 .message(errors)
                 .status(HttpStatus.BAD_REQUEST.value()).build();
