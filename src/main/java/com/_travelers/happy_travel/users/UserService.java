@@ -91,7 +91,7 @@ public class UserService implements UserDetailsService {
             throw  new EntityNotFoundException(User.class.getSimpleName(), "id", id.toString());
         }
         userRepository.deleteById(id);
-        return "User deleted successfully";
+        return "User with id " + id + " deleted successfully";
     }
 
     @Override
