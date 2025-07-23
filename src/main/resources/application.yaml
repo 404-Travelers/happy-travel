@@ -1,9 +1,14 @@
+admin:
+  email: ${ADMIN_EMAIL}
+  username: ${ADMIN_USERNAME}
+  password: ${ADMIN_PASSWORD}
+
 spring:
-#  security:
-#    user:
-#      name: testuser
-#      password: testpass
-#      roles: ROLE_USER
+  security:
+    user:
+      name: testuser
+      password: testpass
+      roles: ROLE_USER
 
   output:
     ansi:
