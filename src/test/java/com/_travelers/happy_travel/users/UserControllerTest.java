@@ -1,5 +1,6 @@
 package com._travelers.happy_travel.users;
 
+import com._travelers.happy_travel.security.CustomUserDetail;
 import com._travelers.happy_travel.users.User;
 import com._travelers.happy_travel.users.UserService;
 import com._travelers.happy_travel.users.dto.UserRegisterRequest;
@@ -16,15 +17,13 @@ import org.springframework.http.MediaType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -32,6 +31,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -52,9 +52,13 @@ public class UserControllerTest{
     private UserRegisterRequest userRegisterRequest;
     private UserRegisterRequest invalidUserRegisterRequest;
     private UserResponse userResponse;
+    private UserDetails testUserDetails;
+    private User user;
 
     @BeforeEach
     void setUp() {
+        user = new User(1L, "Kate", "kate.dev@gmail.com", "encoded-password", Role.ROLE_ADMIN, new ArrayList<>());
+        testUserDetails = new CustomUserDetail(user);
         userRegisterRequest = new UserRegisterRequest("Katie", "kate.dev@gmail.com", "mypass1234*");
         userResponse = new UserResponse("Katie", "kate.dev@gmail.com", "ROLE_USER");
         invalidUserRegisterRequest = new UserRegisterRequest("Kate", "kate.dev@gmail.com", "mypass1234*");
@@ -84,7 +88,8 @@ public class UserControllerTest{
         given(userService.getUserById(eq(id))).willReturn(userResponse);
 
         mockMvc.perform(get("/users/{id}", id)
-                    .accept(MediaType.APPLICATION_JSON))
+                        .with(user(testUserDetails))
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().json(expectedJson));
 

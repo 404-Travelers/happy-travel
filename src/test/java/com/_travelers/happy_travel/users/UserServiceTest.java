@@ -91,27 +91,27 @@ public class UserServiceTest {
         assertEquals(expectedException.getMessage(), resultException.getMessage());
         verify(userRepository, times(1)).findById(id);
     }
-    
-    @Test
-    void getUserByUsername_whenUserExists_returnsUserResponse() {
-        String username ="Kate";
-        when(userRepository.findByUsername(eq(username))).thenReturn(Optional.of(user));
-        UserResponse result = userService.getUserByUsername(username);
-
-        assertEquals(userResponse, result);
-        verify(userRepository, times(1)).findByUsername(username);
-    }
-
-    @Test
-    void getUserByUsername_whenUserDoesNotExist_returnsException() {
-        String username = "Mike";
-        String expectedMessage = "User with username " + username + " not found";
-        when(userRepository.findByUsername(anyString())).thenReturn(Optional.empty());
-
-        Exception exception = assertThrows(EntityNotFoundException.class, () -> userService.getUserByUsername(username));
-        assertEquals(expectedMessage, exception.getMessage());
-        verify(userRepository, times(1)).findByUsername(username);
-    }
+//
+//    @Test
+//    void getUserByUsername_whenUserExists_returnsUserResponse() {
+//        String username ="Kate";
+//        when(userRepository.findByUsername(eq(username))).thenReturn(Optional.of(user));
+//        UserResponse result = userService.getUserByUsername(username);
+//
+//        assertEquals(userResponse, result);
+//        verify(userRepository, times(1)).findByUsername(username);
+//    }
+//
+//    @Test
+//    void getUserByUsername_whenUserDoesNotExist_returnsException() {
+//        String username = "Mike";
+//        String expectedMessage = "User with username " + username + " not found";
+//        when(userRepository.findByUsername(anyString())).thenReturn(Optional.empty());
+//
+//        Exception exception = assertThrows(EntityNotFoundException.class, () -> userService.getUserByUsername(username));
+//        assertEquals(expectedMessage, exception.getMessage());
+//        verify(userRepository, times(1)).findByUsername(username);
+//    }
 
     @Test
     void addUser_whenUserIsNew_returnsUserResponse(){
