@@ -24,7 +24,7 @@ public class UserController {
             summary = "Get user by ID",
             description = "Returns a user by ID. Throws error if not found."
     )
-    @GetMapping("/{id}")
+    @GetMapping("")
     public ResponseEntity<UserResponse> getOwnUser(
             @AuthenticationPrincipal CustomUserDetail userDetail) {
         UserResponse user = userService.getOwnUser(userDetail.getId());
@@ -35,7 +35,7 @@ public class UserController {
             summary = "Update user by ID",
             description = "Updates an existing user’s username, email, or password."
     )
-    @PutMapping("/{id}")
+    @PutMapping("")
     public ResponseEntity<UserResponse> updateOwnUser(
             @AuthenticationPrincipal CustomUserDetail userDetail,
             @RequestBody @Valid UserRegisterRequest userRequest
@@ -49,7 +49,7 @@ public class UserController {
             summary = "Delete user by ID",
             description = "Deletes user with given ID. Returns 204 if successful."
     )
-    @DeleteMapping("/{id}")
+    @DeleteMapping("")
     public ResponseEntity<String> deleteOwnUser(
             @AuthenticationPrincipal CustomUserDetail userDetail) {
         String message = userService.deleteOwnUser(userDetail.getId());
