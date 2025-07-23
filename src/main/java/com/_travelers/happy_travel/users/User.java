@@ -35,6 +35,10 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Destination> destinations;
+
+    public boolean hasRole(Role role) {
+        return this.role == role;
+    }
 }
 
 
