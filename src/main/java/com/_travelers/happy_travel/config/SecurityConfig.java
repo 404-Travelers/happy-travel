@@ -56,7 +56,7 @@ public class SecurityConfig {
                                 "/swagger-resources/**", "/webjars/**").permitAll()
                         .requestMatchers( "/register", "/login").permitAll()
                         .requestMatchers("/users/**").authenticated()
-                        .requestMatchers(HttpMethod.GET,"/users").hasRole("ADMIN")
+                        .requestMatchers("/admin/users/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/destinations", "/destination/{id}", "/destination/filter").permitAll()
                         .requestMatchers("/destinations/user").authenticated()
                         .requestMatchers("/destination/user/**").authenticated()
