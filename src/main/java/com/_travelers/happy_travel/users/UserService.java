@@ -29,8 +29,17 @@ public class UserService implements UserDetailsService {
             .map(UserMapper::toDto)
             .toList();
 }
-    @PreAuthorize("#id == principal.user.id or hasRole('ADMIN')")
-    public UserResponse getUserById(Long id) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public UserResponse getUserByIdAdmin(Long id) {
+        return getUserById(id);
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    public UserResponse getOwnUser(Long id) {
+        return getUserById(id);
+    }
+
+    private UserResponse getUserById(Long id){
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(User.class.getSimpleName(), "id", id.toString()));
         return UserMapper.toDto(user);
@@ -43,22 +52,15 @@ public class UserService implements UserDetailsService {
     }*/
 
     public UserResponse addUser(UserRegisterRequest request) {
-        if (userRepository.existsByUsername(request.username())) {
-            throw new EntityAlreadyExistsException(User.class.getSimpleName(), "username", request.username());
-        }
-        if (userRepository.existsByEmail(request.email())) {
-            throw new EntityAlreadyExistsException(User.class.getSimpleName(), "email", request.email());
-        }
-        String encodedPassword = passwordEncoder.encode(request.password());
-        Role userRole = Role.ROLE_USER;
-        User user = UserMapper.toEntity(request, userRole);
-        user.setPassword(encodedPassword);
-        userRepository.save(user);
-        return UserMapper.toDto(user);
+        return addUserByRole(request, Role.ROLE_USER);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     public UserResponse addAdmin(UserRegisterRequest request) {
+        return addUserByRole(request, Role.ROLE_ADMIN);
+    }
+
+    private UserResponse addUserByRole(UserRegisterRequest request, Role role) {
         if (userRepository.existsByUsername(request.username())) {
             throw new EntityAlreadyExistsException(User.class.getSimpleName(), "username", request.username());
         }
@@ -66,20 +68,25 @@ public class UserService implements UserDetailsService {
             throw new EntityAlreadyExistsException(User.class.getSimpleName(), "email", request.email());
         }
         String encodedPassword = passwordEncoder.encode(request.password());
-        Role userRole = Role.ROLE_ADMIN;
-        User user = UserMapper.toEntity(request, userRole);
+        User user = UserMapper.toEntity(request, role);
         user.setPassword(encodedPassword);
         userRepository.save(user);
         return UserMapper.toDto(user);
     }
 
-    @PreAuthorize("#id == principal.user.id")
-    public UserResponse updateUser(Long id, UserRegisterRequest request) {
+
+    @PreAuthorize("isAuthenticated()")
+    public UserResponse updateOwnUser(Long id, UserRegisterRequest request) {
         User existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(User.class.getSimpleName(), "id", id.toString()));
         if(!existingUser.getUsername().equals(request.username())) {
             if (userRepository.findByUsername(request.username()).isPresent()) {
                 throw new EntityAlreadyExistsException(User.class.getSimpleName(), "username", request.username());
+            }
+        }
+        if (!existingUser.getEmail().equals(request.email())) {
+            if (userRepository.findByEmail(request.email()).isPresent()) {
+                throw new EntityAlreadyExistsException(User.class.getSimpleName(), "email", request.email());
             }
         }
         existingUser.setUsername(request.username());
@@ -89,8 +96,17 @@ public class UserService implements UserDetailsService {
         return UserMapper.toDto(updatedUser);
     }
 
-    @PreAuthorize("#id == principal.user.id or hasRole('ADMIN')")
-    public String deleteUser(Long id) {
+    @PreAuthorize("isAuthenticated()")
+    public String deleteOwnUser(Long id) {
+        return deleteUserById(id);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public String deleteUserByIdAdmin(Long id) {
+        return deleteUserById(id);
+    }
+
+    private String deleteUserById(Long id) {
         if(!userRepository.existsById(id)) {
             throw  new EntityNotFoundException(User.class.getSimpleName(), "id", id.toString());
         }
