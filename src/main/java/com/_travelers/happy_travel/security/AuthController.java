@@ -29,7 +29,8 @@ public class AuthController {
         UserResponse userResponse = userService.addUser(userRegisterRequest);
         return new ResponseEntity<>(userResponse, HttpStatus.CREATED);
     }
-    //@PreAuthorize("hasAuthority('ROLE_ADMIN')")
+
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/admin/register")
     public ResponseEntity<UserResponse> adminRegister(@RequestBody @Valid UserRegisterRequest userRegisterRequest) {
         UserResponse userResponse = userService.addAdmin(userRegisterRequest);
