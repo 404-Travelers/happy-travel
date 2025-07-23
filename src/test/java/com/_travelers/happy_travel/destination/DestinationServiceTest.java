@@ -160,8 +160,7 @@ public class DestinationServiceTest {
     @Test
     void deleteDestination_whenDestinationExists_returnsMessage() {
         Long id  = 1L;
-        Destination destination = new Destination();
-        String expectedMessage = "Destination deleted successfully";
+        String expectedMessage = "Destination with id " + id + " deleted successfully";
         when(destinationRepository.findById(eq(id))).thenReturn(Optional.of(destination));
 
         String result = destinationService.deleteDestination(id, user);
