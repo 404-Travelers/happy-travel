@@ -56,6 +56,8 @@ public class SecurityConfig {
                                 "/swagger-resources/**", "/webjars/**", "/register", "/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/destinations/**").permitAll()
                         .requestMatchers("/destinations/user/**").authenticated()
+                        .requestMatchers("/users**").permitAll()
+                        .requestMatchers("/users/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
