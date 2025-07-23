@@ -4,6 +4,7 @@ import com._travelers.happy_travel.destinations.Destination;
 import com._travelers.happy_travel.users.User;
 import com._travelers.happy_travel.users.dto.UserMapper;
 import com._travelers.happy_travel.users.dto.UserResponse;
+import com._travelers.happy_travel.users.dto.UserResponseShort;
 
 public class DestinationMapper {
     public static Destination toEntity(DestinationRequest dto, User user){
@@ -16,11 +17,11 @@ public class DestinationMapper {
                 .build();
     }
     public static DestinationResponse toDto(Destination destination){
-        UserResponse userDto = UserMapper.toDto(destination.getUser());
+        UserResponseShort userDto = UserMapper.toDtoShort(destination.getUser());
         return new DestinationResponse(destination.getCountry(), destination.getCity(), destination.getDescription(), destination.getImageUrl(), userDto);
     }
     public static DestinationResponseShort toDtoShort (Destination destination){
-        UserResponse userDto = UserMapper.toDto(destination.getUser());
+        UserResponseShort userDto = UserMapper.toDtoShort(destination.getUser());
         return new DestinationResponseShort(destination.getCountry(),destination.getCity(), destination.getImageUrl(), userDto);
     }
 }

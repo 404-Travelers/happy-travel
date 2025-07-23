@@ -21,4 +21,8 @@ public class UserMapper {
                 user.getRole().name()
         );
     }
+
+    public static UserResponseShort toDtoShort (User user){
+        return new UserResponseShort(user.getUsername());
+    }
 }
