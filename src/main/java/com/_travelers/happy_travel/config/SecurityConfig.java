@@ -53,12 +53,15 @@ public class SecurityConfig {
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(authenticationEntryPoint()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
-                                "/swagger-resources/**", "/webjars/**", "/register", "/login").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/destinations/**").permitAll()
-                        .requestMatchers("/destinations/user/**").authenticated()
-                        .requestMatchers("/users**").permitAll()
-                        .requestMatchers("/users/**").permitAll()
-                        .anyRequest().authenticated()
+                                "/swagger-resources/**", "/webjars/**").permitAll()
+                        .requestMatchers( "/register", "/login").permitAll()
+                        .requestMatchers("/users/**").authenticated()
+                        .requestMatchers(HttpMethod.GET,"/users").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/destinations", "/destination/{id}", "/destination/filter").permitAll()
+                        .requestMatchers("/destinations/user").authenticated()
+                        .requestMatchers("/destination/user/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/admin/register").hasRole("ADMIN")
+                        .anyRequest().hasRole("ADMIN")
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 

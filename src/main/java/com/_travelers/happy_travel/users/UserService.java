@@ -1,9 +1,9 @@
 package com._travelers.happy_travel.users;
 
-
 import com._travelers.happy_travel.exceptions.EntityAlreadyExistsException;
 import com._travelers.happy_travel.exceptions.EntityNotFoundException;
 import com._travelers.happy_travel.security.CustomUserDetail;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -22,24 +22,25 @@ public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
 
+    @PreAuthorize("hasRole('ADMIN')")
     public List<UserResponse> getAllUsers() {
     return userRepository.findAll()
             .stream()
             .map(UserMapper::toDto)
             .toList();
 }
-
+    @PreAuthorize("#id == principal.user.id or hasRole('ADMIN')")
     public UserResponse getUserById(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(User.class.getSimpleName(), "id", id.toString()));
         return UserMapper.toDto(user);
     }
 
-    public UserResponse getUserByUsername(String username) {
+    /*public UserResponse getUserByUsername(String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new EntityNotFoundException(User.class.getSimpleName(), "username", username));
         return UserMapper.toDto(user);
-    }
+    }*/
 
     public UserResponse addUser(UserRegisterRequest request) {
         if (userRepository.existsByUsername(request.username())) {
@@ -56,6 +57,7 @@ public class UserService implements UserDetailsService {
         return UserMapper.toDto(user);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public UserResponse addAdmin(UserRegisterRequest request) {
         if (userRepository.existsByUsername(request.username())) {
             throw new EntityAlreadyExistsException(User.class.getSimpleName(), "username", request.username());
@@ -71,6 +73,7 @@ public class UserService implements UserDetailsService {
         return UserMapper.toDto(user);
     }
 
+    @PreAuthorize("#id == principal.user.id")
     public UserResponse updateUser(Long id, UserRegisterRequest request) {
         User existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(User.class.getSimpleName(), "id", id.toString()));
@@ -86,6 +89,7 @@ public class UserService implements UserDetailsService {
         return UserMapper.toDto(updatedUser);
     }
 
+    @PreAuthorize("#id == principal.user.id or hasRole('ADMIN')")
     public String deleteUser(Long id) {
         if(!userRepository.existsById(id)) {
             throw  new EntityNotFoundException(User.class.getSimpleName(), "id", id.toString());
@@ -99,4 +103,5 @@ public class UserService implements UserDetailsService {
         return new CustomUserDetail(userRepository.findByUsername(username)
                 .orElseThrow(() -> new EntityNotFoundException(User.class.getSimpleName(), "username", username)));
     }
+
 }

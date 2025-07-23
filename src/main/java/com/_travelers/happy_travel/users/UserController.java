@@ -26,7 +26,7 @@ public class UserController {
             description = "Returns all users. Throws error if not found."
     )
     @GetMapping("")
-//    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<UserResponse>> getAllUsers() {
         List<UserResponse> users = userService.getAllUsers();
         return ResponseEntity.ok(users);
@@ -37,22 +37,13 @@ public class UserController {
             description = "Returns a user by ID. Throws error if not found."
     )
     @GetMapping("/{id}")
-//    @PreAuthorize("#id == authentication.principal.id or hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("#id == principal.user.id or hasRole('ADMIN')")
     public ResponseEntity<UserResponse> getUserById(@PathVariable @Positive(message = "User id must be a positive number") Long id) {
         UserResponse user = userService.getUserById(id);
         return ResponseEntity.ok(user);
     }
 
-    @Operation(
-            summary = "Delete user by ID",
-            description = "Deletes user with given ID. Returns 204 if successful."
-    )
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteUser(@PathVariable @Positive(message = "User id must be a positive number") Long id) {
-        String message = userService.deleteUser(id);
-        return ResponseEntity.ok(message);
-    }
-
+    @PreAuthorize("#id == principal.user.id")
     @Operation(
             summary = "Update user by ID",
             description = "Updates an existing user’s username, email, or password."
@@ -64,5 +55,16 @@ public class UserController {
     ) {
         UserResponse updatedUser = userService.updateUser(id, userRequest);
         return ResponseEntity.ok(updatedUser);
+    }
+
+    @PreAuthorize("#id == principal.user.id or hasRole('ADMIN')")
+    @Operation(
+            summary = "Delete user by ID",
+            description = "Deletes user with given ID. Returns 204 if successful."
+    )
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteUser(@PathVariable @Positive(message = "User id must be a positive number") Long id) {
+        String message = userService.deleteUser(id);
+        return ResponseEntity.ok(message);
     }
 }
