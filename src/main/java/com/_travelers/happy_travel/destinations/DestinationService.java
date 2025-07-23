@@ -5,9 +5,12 @@ import com._travelers.happy_travel.destinations.dto.DestinationRequest;
 import com._travelers.happy_travel.destinations.dto.DestinationResponse;
 import com._travelers.happy_travel.destinations.dto.DestinationResponseShort;
 import com._travelers.happy_travel.exceptions.EntityNotFoundException;
+import com._travelers.happy_travel.users.Role;
 import com._travelers.happy_travel.users.User;
 import com._travelers.happy_travel.users.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -60,25 +63,26 @@ public class DestinationService {
         if (destinations.isEmpty()){
             throw new EntityNotFoundException("Destination", "userId", userId.toString());
         }
-
+//        assertUserCanModifyOrDelete(destination, user);
         return destinations.stream()
                 .map(DestinationMapper::toDto)
                 .toList();
     }
 
+    @PreAuthorize("isAuthenticated()")
     public DestinationResponse addDestination(DestinationRequest destinationRequest, User user) {
         Destination destination = DestinationMapper.toEntity(destinationRequest, user);
+        assertUserCanModifyOrDelete(destination, user);
         Destination savedDestination = destinationRepository.save(destination);
         return DestinationMapper.toDto(savedDestination);
     }
 
+    @PreAuthorize("isAuthenticated()")
     public DestinationResponse updateDestination(Long id, DestinationRequest request, User user) {
         Destination destination = destinationRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Destination", "id", id.toString()));
 
-//        if (!destination.getUser().getId().equals(user.getId())) {
-//            return null;
-//        }
+        assertUserCanModifyOrDelete(destination, user);
 
         destination.setCountry(request.country());
         destination.setCity(request.city());
@@ -89,15 +93,23 @@ public class DestinationService {
         return DestinationMapper.toDto(updated);
     }
 
+    @PreAuthorize("isAuthenticated()")
     public String deleteDestination(Long id, User user) {
-        Destination destination = destinationRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Destination", "id", id.toString()));
-
-//        if (!destination.getUser().getId().equals(user.getId())) {
-//            return null;
-//        }
-
+        Destination destination = findDestinationOrThrow(id);
+        assertUserCanModifyOrDelete(destination, user);
         destinationRepository.delete(destination);
-        return "Destination deleted successfully";
+        return "Destination with id " + id + " deleted successfully";
+    }
+
+    private Destination findDestinationOrThrow(Long id) {
+    return destinationRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("Destination", "id", id.toString()));
+}
+
+
+    private void assertUserCanModifyOrDelete(Destination destination, User user) {
+        if (!destination.getUser().getId().equals(user.getId()) && !user.hasRole(Role.ROLE_ADMIN)) {
+            throw new AccessDeniedException("You are not authorized to modify or delete this destination.");
+        }
     }
 }
