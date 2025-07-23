@@ -169,7 +169,10 @@ public class UserControllerTest{
                         .content(jsonRequest))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                 .andExpect(content().json(jsonResponse));
+                .andExpect(jsonPath("$.error").value("VALIDATION_ERROR"))
+                .andExpect(jsonPath("$.path").value("/users/1"))
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message.username").value("Username must be between 3 and 50 characters"));
     }
 
 
