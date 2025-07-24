@@ -172,7 +172,6 @@ public class UserControllerTest{
         mockMvc.perform(put("/users/{id}", 1)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest))
-                .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("VALIDATION_ERROR"))
                 .andExpect(jsonPath("$.path").value("/users/1"))

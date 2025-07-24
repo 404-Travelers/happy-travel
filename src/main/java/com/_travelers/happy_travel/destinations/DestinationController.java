@@ -49,7 +49,6 @@ public class DestinationController {
     public ResponseEntity<DestinationResponse> addDestination(
             @AuthenticationPrincipal CustomUserDetail userDetail,
             @RequestBody @Valid DestinationRequest request) {
-        System.out.println("MY234 USER" + userDetail.getUser().toString());
         DestinationResponse created = destinationService.addDestination(request, userDetail.getUser());
         return ResponseEntity.ok(created);
     }

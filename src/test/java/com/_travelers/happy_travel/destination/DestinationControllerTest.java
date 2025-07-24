@@ -22,6 +22,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.web.servlet.ResultActions;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,6 +55,7 @@ class DestinationControllerTest {
     private User user;
     private UserDetails testUserDetails;
     private DestinationRequest destinationRequest;
+    private DestinationRequest invalidDestinationRequest;
     private DestinationResponse destinationResponse;
     private DestinationResponseShort destinationResponseShort;
     private UserResponseShort userResponseShort;
@@ -62,11 +64,11 @@ class DestinationControllerTest {
     void setUp() {
         user = new User(1L, "Kate", "kate.dev@gmail.com", "encoded-password", Role.ADMIN, new ArrayList<>());
         testUserDetails = new CustomUserDetail(user);
-
+        invalidDestinationRequest = new DestinationRequest("Sp", null, "Nice", "image.jpg");
         userResponseShort = new UserResponseShort("Kate");
-        destinationRequest = new DestinationRequest("Spain", "Valencia", "Nice", "image.jpg");
-        destinationResponse = new DestinationResponse("Spain", "Valencia", "Nice", "image.jpg", userResponseShort);
-        destinationResponseShort = new DestinationResponseShort("Spain", "Valencia", "image.jpg", userResponseShort);
+        destinationRequest = new DestinationRequest("Spain", "Valencia", "Nice", "https://image.jpg");
+        destinationResponse = new DestinationResponse("Spain", "Valencia", "Nice", "https://image.jpg", userResponseShort);
+        destinationResponseShort = new DestinationResponseShort("Spain", "Valencia", "https://image.jpg", userResponseShort);
     }
 
     @AfterEach
@@ -80,6 +82,19 @@ class DestinationControllerTest {
         } catch (Exception exception) {
             throw new RuntimeException("Failed to convert object to JSON string for testing", exception);
         }
+    }
+
+    private ResultActions performPostRequest(String url, Object body, UserDetails user) throws Exception {
+        return mockMvc.perform(post(url)
+                .with(user(user))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(body)));
+    }
+
+    private ResultActions performPostRequestWithoutUser(String url, Object body) throws Exception {
+        return mockMvc.perform(post(url)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(body)));
     }
 
     @Nested
@@ -171,14 +186,11 @@ class DestinationControllerTest {
     class AddDestinationTests {
 
         @Test
-        void addDestination_returnsCreatedDestination() throws Exception {
+        void addDestination_whenRequestIsValid_returnsCreatedDestination() throws Exception {
             given(destinationService.addDestination(eq(destinationRequest), eq(user)))
                     .willReturn(destinationResponse);
 
-            mockMvc.perform(post("/destinations/user")
-                            .with(user(testUserDetails))
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(asJsonString(destinationRequest)))
+            performPostRequest("/destinations", destinationRequest, testUserDetails)
                     .andExpect(status().isOk())
                     .andExpect(content().json(asJsonString(destinationResponse)));
 
@@ -186,11 +198,25 @@ class DestinationControllerTest {
         }
 
         @Test
+        void addDestination_whenRequestIsInvalid_returns400() throws Exception {
+            performPostRequest("/destinations", invalidDestinationRequest, testUserDetails)
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.error").value("VALIDATION_ERROR"))
+                    .andExpect(jsonPath("$.path").value("/destinations"))
+                    .andExpect(jsonPath("$.status").value(400))
+                    .andExpect(jsonPath("$.message.country").value("Country must be more than 3 characters and less than 50 characters"))
+                    .andExpect(jsonPath("$.message.city").value("City is required"))
+                    .andExpect(jsonPath("$.message.imageUrl").value("Invalid content type"));
+        }
+
+        @Test
         void addDestination_withoutAuthentication_returns401() throws Exception {
-            mockMvc.perform(post("/destinations/user")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(asJsonString(destinationRequest)))
-                    .andExpect(status().isUnauthorized());
+            performPostRequestWithoutUser("/destinations", invalidDestinationRequest)
+                    .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error").value("UNAUTHORIZED"))
+                .andExpect(jsonPath("$.path").value("/destinations"))
+                .andExpect(jsonPath("$.status").value(401))
+                .andExpect(jsonPath("$.message").value("Unauthorized: Full authentication is required to access this resource"));
         }
     }
 
