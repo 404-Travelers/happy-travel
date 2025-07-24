@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.*;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.AccessDeniedException;
@@ -23,14 +24,18 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
+import static org.springframework.http.HttpMethod.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -75,11 +80,11 @@ class DestinationControllerTest {
     }
 
     @AfterEach
-    void afterTest(){
+    void afterTest() {
         verifyNoMoreInteractions(destinationService);
     }
 
-    private String asJsonString(Object object){
+    private String asJsonString(Object object) {
         try {
             return objectMapper.writeValueAsString(object);
         } catch (Exception exception) {
@@ -87,38 +92,36 @@ class DestinationControllerTest {
         }
     }
 
-    private ResultActions performPostRequest(String url, Object body, UserDetails user) throws Exception {
-        return mockMvc.perform(post(url)
-                .with(user(user))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(asJsonString(body)));
+    private static final Map<HttpMethod, Function<String, MockHttpServletRequestBuilder>> REQUEST_BUILDERS = Map.of(
+            HttpMethod.GET, url -> get(url),
+            HttpMethod.POST, url -> post(url),
+            HttpMethod.PUT, url -> put(url),
+            HttpMethod.DELETE, url -> delete(url)
+    );
+
+    private ResultActions performRequest(HttpMethod method, String url, Object body, UserDetails user) throws Exception {
+
+        Function<String, MockHttpServletRequestBuilder> builderFunction = REQUEST_BUILDERS.get(method);
+
+        if (builderFunction == null) {
+            throw new IllegalArgumentException("Unsupported HTTP method: " + method);
+        }
+
+        MockHttpServletRequestBuilder builder = builderFunction.apply(url);
+        builder.contentType(MediaType.APPLICATION_JSON);
+
+
+        if (body != null) {
+            builder.content(asJsonString(body));
+        }
+
+        if (user != null) {
+            builder.with(user(user));
+        }
+
+        return mockMvc.perform(builder);
     }
 
-    private ResultActions performPostRequestWithoutUser(String url, Object body) throws Exception {
-        return mockMvc.perform(post(url)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(asJsonString(body)));
-    }
-
-    private ResultActions performPutRequest(String url, Object body, UserDetails user) throws Exception {
-        return mockMvc.perform(put(url)
-                .with(user(user))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(asJsonString(body)));
-    }
-
-    private ResultActions performPutRequestNotOwner(String url, Object body, UserDetails user) throws Exception {
-        return mockMvc.perform(put(url)
-                .with(user(user))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(asJsonString(body)));
-    }
-
-    private ResultActions performPutRequestWithoutUser(String url, Object body) throws Exception {
-        return mockMvc.perform(put(url)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(asJsonString(body)));
-    }
 
     @Nested
     @DisplayName("GET /destinations")
@@ -213,7 +216,7 @@ class DestinationControllerTest {
             given(destinationService.addDestination(eq(destinationRequest), eq(user)))
                     .willReturn(destinationResponse);
 
-            performPostRequest("/destinations", destinationRequest, testUserDetails)
+            performRequest(POST, "/destinations", destinationRequest, testUserDetails)
                     .andExpect(status().isOk())
                     .andExpect(content().json(asJsonString(destinationResponse)));
 
@@ -222,7 +225,7 @@ class DestinationControllerTest {
 
         @Test
         void addDestination_whenRequestIsInvalid_returns400() throws Exception {
-            performPostRequest("/destinations", invalidDestinationRequest, testUserDetails)
+            performRequest(POST, "/destinations", invalidDestinationRequest, testUserDetails)
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.error").value("VALIDATION_ERROR"))
                     .andExpect(jsonPath("$.path").value("/destinations"))
@@ -234,7 +237,7 @@ class DestinationControllerTest {
 
         @Test
         void addDestination_withoutAuthentication_returns401() throws Exception {
-            performPostRequestWithoutUser("/destinations", invalidDestinationRequest)
+            performRequest(POST, "/destinations", invalidDestinationRequest, null)
                     .andExpect(status().isUnauthorized())
                     .andExpect(jsonPath("$.error").value("UNAUTHORIZED"))
                     .andExpect(jsonPath("$.path").value("/destinations"))
@@ -252,7 +255,7 @@ class DestinationControllerTest {
             Long id = 1L;
             given(destinationService.updateDestination(eq(id), eq(destinationRequest), any(User.class))).willReturn(destinationResponse);
 
-            performPutRequest("/destinations/" + id, destinationRequest, testUserDetails)
+            performRequest(PUT, "/destinations/" + id, destinationRequest, testUserDetails)
                     .andExpect(status().isOk())
                     .andExpect(content().json(asJsonString(destinationResponse)));
 
@@ -261,7 +264,7 @@ class DestinationControllerTest {
 
         @Test
         void updateDestination_whenRequestIsInvalid_returns400() throws Exception {
-            performPutRequest("/destinations/20", invalidDestinationRequest, testUserDetails)
+            performRequest(PUT, "/destinations/20", invalidDestinationRequest, testUserDetails)
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.error").value("VALIDATION_ERROR"))
                     .andExpect(jsonPath("$.path").value("/destinations/20"))
@@ -276,7 +279,7 @@ class DestinationControllerTest {
             Long id = 1L;
             given(destinationService.updateDestination(eq(id), eq(destinationRequest), eq(user))).willThrow(new AccessDeniedException("Forbidden"));
 
-            performPutRequestWithoutUser("/destinations/" + id, destinationRequest)
+            performRequest(PUT, "/destinations/" + id, destinationRequest, null)
                     .andExpect(status().isUnauthorized())
                     .andExpect(jsonPath("$.error").value("UNAUTHORIZED"))
                     .andExpect(jsonPath("$.path").value("/destinations/1"))
@@ -289,7 +292,7 @@ class DestinationControllerTest {
             Long id = 1L;
             given(destinationService.updateDestination(eq(id), eq(destinationRequest), eq(user))).willThrow(new AccessDeniedException("You are not authorized to modify or delete this destination."));
 
-            performPutRequestNotOwner("/destinations/" + id, destinationRequest, userDetailsNotOwner)
+            performRequest(PUT, "/destinations/" + id, destinationRequest, userDetailsNotOwner)
                     .andExpect(status().isForbidden())
                     .andExpect(jsonPath("$.error").value("FORBIDDEN"))
                     .andExpect(jsonPath("$.path").value("/destinations/1"))
@@ -305,7 +308,7 @@ class DestinationControllerTest {
     class DeleteDestinationTests {
 
         @Test
-        void deleteDestination_successful() throws Exception {
+        void deleteDestination_whenDestinationExists_returnsMessage() throws Exception {
             Long id = 1L;
             String message = "Destination with id " + id + " deleted successfully";
             given(destinationService.deleteDestination(id, user)).willReturn(message);
@@ -320,7 +323,35 @@ class DestinationControllerTest {
         }
 
         @Test
-        void deleteDestination_unauthorized_returns403() throws Exception {
+        void deleteDestination_whenDestinationDoesNotExist_returns404() throws Exception {
+            Long id = 1L;
+            String message = "Destination with id " + id + " deleted successfully";
+            given(destinationService.deleteDestination(id, user)).willReturn(message);
+
+            mockMvc.perform(delete("/destinations/user/{id}", id)
+                            .with(user(testUserDetails)))
+                    .andExpect(status().isOk())
+                    .andExpect(content().string(message))
+                    .andReturn();
+
+            verify(destinationService, times(1)).deleteDestination(id, user);
+        }
+
+        @Test
+        void deleteDestination_whenUnauthorized_returns401() throws Exception {
+            Long id = 1L;
+            given(destinationService.deleteDestination(id, user)).willThrow(new AccessDeniedException("Forbidden"));
+
+            mockMvc.perform(delete("/destinations/user/{id}", id)
+                            .with(user(testUserDetails)))
+                    .andExpect(status().isForbidden());
+            //and expect json
+
+            verify(destinationService, times(1)).deleteDestination(id, user);
+        }
+
+        @Test
+        void deleteDestination_whenUserNotOwner_returns403() throws Exception {
             Long id = 1L;
             given(destinationService.deleteDestination(id, user)).willThrow(new AccessDeniedException("Forbidden"));
 
