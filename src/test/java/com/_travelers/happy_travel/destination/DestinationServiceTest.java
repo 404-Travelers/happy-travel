@@ -23,14 +23,14 @@ import org.junit.jupiter.api.Nested;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.access.AccessDeniedException;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -217,26 +217,72 @@ public class DestinationServiceTest {
         }
     }
 
-    @Test
-    void deleteDestination_whenDestinationExists_returnsMessage() {
-        Long id  = 1L;
-        String expectedMessage = "Destination with id " + id + " deleted successfully";
-        when(destinationRepository.findById(eq(id))).thenReturn(Optional.of(destination));
+    @Nested
+    @DisplayName("DELETE destinations")
+    class DeleteDestinationTests {
 
-        String result = destinationService.deleteDestination(id, user);
-        assertEquals(expectedMessage, result);
-        verify(destinationRepository, times(1)).findById(id);
-        verify(destinationRepository, times(1)).delete(any(Destination.class));
+        @Test
+        void deleteDestination_whenDestinationExists_returnsMessage() {
+            Long id = 1L;
+            String expectedMessage = "Destination with id " + id + " deleted successfully";
+            when(destinationRepository.findById(eq(id))).thenReturn(Optional.of(destination));
+
+            String result = destinationService.deleteDestination(id, user);
+            assertEquals(expectedMessage, result);
+            verify(destinationRepository, times(1)).findById(id);
+            verify(destinationRepository, times(1)).delete(any(Destination.class));
+        }
+
+        @Test
+        void deleteDestination_whenDestinationDoesNotExist_returnsException() {
+            Long id = 1L;
+            String expectedMessage = "Destination with id " + id + " not found";
+            when(destinationRepository.findById(eq(id))).thenReturn(Optional.empty());
+
+            Exception exception = assertThrows(EntityNotFoundException.class, () -> destinationService.deleteDestination(id, user));
+            assertEquals(expectedMessage, exception.getMessage());
+            verify(destinationRepository, times(1)).findById(id);
+        }
     }
 
-    @Test
-    void deleteDestination_whenDestinationDoesNotExist_returnsException() {
-        Long id  = 1L;
-        String expectedMessage = "Destination with id " + id + " not found";
-        when(destinationRepository.findById(eq(id))).thenReturn(Optional.empty());
+    @Nested
+    @DisplayName("HELPERS assertUserRole")
+    class AssertUserTests {
 
-        Exception exception = assertThrows(EntityNotFoundException.class, () -> destinationService.deleteDestination(id, user));
-        assertEquals(expectedMessage, exception.getMessage());
-        verify(destinationRepository, times(1)).findById(id);
+        @Test
+        void assertUserIsOwner_whenUserIsOwner_returnsVoid(){
+            assertDoesNotThrow(() -> destinationService.assertUserIsOwner(destination, user));
+        }
+
+        @Test
+        void assertUserIsOwner_whenUserIsNotOwner_returnsException(){
+            User notOwner = new User();
+            user.setId(10L);
+            AccessDeniedException ex = assertThrows(AccessDeniedException.class, () ->
+                    destinationService.assertUserIsOwner(destination, notOwner));
+            assertEquals("You are not authorized to modify or delete this destination.", ex.getMessage());
+        }
+
+        @Test
+        void assertUserIsOwnerOrAdmin_whenUserIsOwner_returnsVoid(){
+            assertDoesNotThrow(() -> destinationService.assertUserIsOwnerOrAdmin(destination, user));
+        }
+
+        @Test
+        void assertUserIsOwnerOrAdmin_whenUserIsAdmin_returnsVoid(){
+            User admin = new User();
+            admin.setRole(Role.ADMIN);
+            assertDoesNotThrow(() -> destinationService.assertUserIsOwnerOrAdmin(destination, admin));
+        }
+
+        @Test
+        void assertUserIsOwnerOrAdmin_whenUserIsNotOwnerNorAdmin_returnsException(){
+            User notOwner = new User();
+            user.setId(10L);
+            AccessDeniedException ex = assertThrows(AccessDeniedException.class, () ->
+                    destinationService.assertUserIsOwner(destination, notOwner));
+            assertEquals("You are not authorized to modify or delete this destination.", ex.getMessage());
+
+        }
     }
 }
