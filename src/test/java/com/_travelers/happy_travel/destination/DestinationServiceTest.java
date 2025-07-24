@@ -11,6 +11,7 @@ import com._travelers.happy_travel.exceptions.EntityNotFoundException;
 import com._travelers.happy_travel.destinations.dto.DestinationResponse;
 import com._travelers.happy_travel.users.Role;
 import com._travelers.happy_travel.users.User;
+import com._travelers.happy_travel.users.UserService;
 import com._travelers.happy_travel.users.dto.UserResponse;
 import com._travelers.happy_travel.users.dto.UserResponseShort;
 import org.junit.jupiter.api.AfterEach;
@@ -40,6 +41,9 @@ public class DestinationServiceTest {
     @InjectMocks
     private DestinationService destinationService;
 
+    @Mock
+    private UserService userService;
+
     private Destination destination;
     private DestinationRequest destinationRequest;
     private DestinationResponse destinationResponse;
@@ -65,7 +69,7 @@ public class DestinationServiceTest {
     class GetDestinationsTests{
 
         @Test
-        void getAllDestinations_whenDestinationsExist_returnsListOfDestinationsResponseShort() {
+        void getAllDestinations_whenDestinationsExist_returnsDestinationsList() {
             when(destinationRepository.findAll()).thenReturn(List.of(destination));
 
             List<DestinationResponseShort> result = destinationService.getAllDestinations();
@@ -83,7 +87,7 @@ public class DestinationServiceTest {
         }
 
         @Test
-        void getFilteredDestinations_whenCityAndCountryPresent_returnsListOfDestinationsResponse() {
+        void getFilteredDestinations_whenCityAndCountryPresent_returnsDestinationsList() {
             when(destinationRepository.findByCityContainingIgnoreCaseAndCountryContainingIgnoreCase(eq("rome"), eq("italy"))).thenReturn(List.of(destination));
 
             List<DestinationResponse> result = destinationService.getFilteredDestinations("rome", "italy");
@@ -92,7 +96,7 @@ public class DestinationServiceTest {
         }
 
         @Test
-        void getFilteredDestinations_whenCityPresent_returnsListOfDestinationsResponse() {
+        void getFilteredDestinations_whenCityPresent_returnsDestinationsList() {
             when(destinationRepository.findByCityContainingIgnoreCase(eq("Rome"))).thenReturn(List.of(destination));
 
             List<DestinationResponse> result = destinationService.getFilteredDestinations("Rome", null);
@@ -101,7 +105,7 @@ public class DestinationServiceTest {
         }
 
         @Test
-        void getFilteredDestinations_whenCountryPresent_returnsListOfDestinationsResponse() {
+        void getFilteredDestinations_whenCountryPresent_returnsDestinationsList() {
             when(destinationRepository.findByCountryContainingIgnoreCase(eq("Italy"))).thenReturn(List.of(destination));
 
             List<DestinationResponse> result = destinationService.getFilteredDestinations(null, "Italy");
@@ -135,8 +139,37 @@ public class DestinationServiceTest {
             assertEquals(expectedException.getMessage(), resultException.getMessage());
             verify(destinationRepository, times(1)).findById(id);
         }
+
+        @Test
+        void getDestinationsByUserUsername_whenDestinationExists_returnsDestinationsList() {
+            String username = user.getUsername();
+            when(userService.getByUsername(eq(username))).thenReturn(user);
+            when(destinationRepository.findByUser(eq(user))).thenReturn(List.of(destination));
+
+            List<DestinationResponse> result = destinationService.getDestinationsByUserUsername(username);
+            assertEquals(List.of(destinationResponse), result);
+            verify(destinationRepository, times(1)).findByUser(any(User.class));
+            verify(userService, times(1)).getByUsername(eq(username));
+        }
+
+        @Test
+        void getDestinationsByUserUsername_whenDestinationDoesNotExist_returnsException() {
+            String username = user.getUsername();
+            when(userService.getByUsername(eq(username))).thenReturn(user);
+            when(destinationRepository.findByUser(eq(user))).thenReturn(List.of());
+
+            List<DestinationResponse> result = destinationService.getDestinationsByUserUsername(username);
+            assertEquals(Collections.emptyList(), result);
+            verify(destinationRepository, times(1)).findByUser(any(User.class));
+            verify(userService, times(1)).getByUsername(eq(username));
+        }
     }
 
+    @Nested
+    @DisplayName("POST /destinations")
+    class AddDestinationsTests {
+
+    }
 //    @Test
 //    void getDestinationsByUserId_whenDestinationExists_returnsDestinationsList() {
 //        Long userId = 1L;
