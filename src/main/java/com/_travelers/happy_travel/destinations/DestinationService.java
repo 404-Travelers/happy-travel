@@ -102,7 +102,7 @@ public class DestinationService {
     }
 
     private void assertUserIsOwnerOrAdmin(Destination destination, User user) {
-        if (!destination.getUser().getId().equals(user.getId()) && !user.hasRole(Role.ROLE_ADMIN)) {
+        if (!destination.getUser().getId().equals(user.getId()) && !user.hasRole(Role.ADMIN)) {
             throw new AccessDeniedException("You are not authorized to modify or delete this destination.");
         }
     }
