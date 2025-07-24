@@ -14,7 +14,7 @@ import java.util.List;
 
 @PreAuthorize("hasRole('ADMIN')")
 @RestController
-@RequestMapping("/admin/users")
+@RequestMapping("/admin")
 @RequiredArgsConstructor
 public class AdminController {
 
@@ -24,7 +24,7 @@ public class AdminController {
             summary = "Get all users",
             description = "Returns all users. Throws error if not found."
     )
-    @GetMapping("")
+    @GetMapping("/users")
     public ResponseEntity<List<UserResponse>> getAllUsers(
             @AuthenticationPrincipal CustomUserDetail userDetail) {
         List<UserResponse> users = userService.getAllUsers();
@@ -35,7 +35,7 @@ public class AdminController {
             summary = "Get user by ID",
             description = "Returns a user by ID. Throws error if not found."
     )
-    @GetMapping("/{id}")
+    @GetMapping("/users/{id}")
     public ResponseEntity<UserResponse> getUserById(
             @AuthenticationPrincipal CustomUserDetail userDetail,
             @PathVariable @Positive(message = "User id must be a positive number") Long id) {
@@ -47,7 +47,7 @@ public class AdminController {
             summary = "Delete user by ID",
             description = "Deletes user with given ID. Returns 204 if successful."
     )
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/users/{id}")
     public ResponseEntity<String> deleteUserById(
             @AuthenticationPrincipal CustomUserDetail userDetail,
             @PathVariable @Positive(message = "User id must be a positive number") Long id) {

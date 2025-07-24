@@ -45,11 +45,10 @@ public class UserService implements UserDetailsService {
         return UserMapper.toDto(user);
     }
 
-    /*public UserResponse getUserByUsername(String username) {
-        User user = userRepository.findByUsername(username)
+    public User getByUsername(String username){
+        return userRepository.findByUsername(username)
                 .orElseThrow(() -> new EntityNotFoundException(User.class.getSimpleName(), "username", username));
-        return UserMapper.toDto(user);
-    }*/
+    }
 
     public UserResponse addUser(UserRegisterRequest request) {
         return addUserByRole(request, Role.ROLE_USER);
