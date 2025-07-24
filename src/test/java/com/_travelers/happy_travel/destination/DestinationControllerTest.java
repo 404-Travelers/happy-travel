@@ -1,5 +1,6 @@
 package com._travelers.happy_travel.destination;
 
+import com._travelers.happy_travel.destinations.Destination;
 import com._travelers.happy_travel.destinations.DestinationService;
 import com._travelers.happy_travel.destinations.dto.DestinationRequest;
 import com._travelers.happy_travel.destinations.dto.DestinationResponse;
@@ -277,8 +278,6 @@ class DestinationControllerTest {
         @Test
         void updateDestination_whenUnauthorized_returns401() throws Exception {
             Long id = 1L;
-            given(destinationService.updateDestination(eq(id), eq(destinationRequest), eq(user))).willThrow(new AccessDeniedException("Forbidden"));
-
             performRequest(PUT, "/destinations/" + id, destinationRequest, null)
                     .andExpect(status().isUnauthorized())
                     .andExpect(jsonPath("$.error").value("UNAUTHORIZED"))
@@ -313,11 +312,9 @@ class DestinationControllerTest {
             String message = "Destination with id " + id + " deleted successfully";
             given(destinationService.deleteDestination(id, user)).willReturn(message);
 
-            mockMvc.perform(delete("/destinations/user/{id}", id)
-                            .with(user(testUserDetails)))
+            performRequest(DELETE, "/destinations/" + id, destinationRequest, testUserDetails)
                     .andExpect(status().isOk())
-                    .andExpect(content().string(message))
-                    .andReturn();
+                    .andExpect(content().string(message));
 
             verify(destinationService, times(1)).deleteDestination(id, user);
         }
@@ -325,14 +322,15 @@ class DestinationControllerTest {
         @Test
         void deleteDestination_whenDestinationDoesNotExist_returns404() throws Exception {
             Long id = 1L;
-            String message = "Destination with id " + id + " deleted successfully";
-            given(destinationService.deleteDestination(id, user)).willReturn(message);
+            String expectedMessage = "Destination with id " + id + " not found";
+            given(destinationService.deleteDestination(id, user)).willThrow(new EntityNotFoundException(Destination.class.getSimpleName(), "id", id.toString()));
 
-            mockMvc.perform(delete("/destinations/user/{id}", id)
-                            .with(user(testUserDetails)))
-                    .andExpect(status().isOk())
-                    .andExpect(content().string(message))
-                    .andReturn();
+            performRequest(DELETE, "/destinations/" + id, destinationRequest, testUserDetails)
+                    .andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.error").value("NOT_FOUND"))
+                    .andExpect(jsonPath("$.path").value("/destinations/" + id))
+                    .andExpect(jsonPath("$.status").value(HttpStatus.NOT_FOUND.value()))
+                    .andExpect(jsonPath("$.message").value(expectedMessage));
 
             verify(destinationService, times(1)).deleteDestination(id, user);
         }
@@ -340,27 +338,28 @@ class DestinationControllerTest {
         @Test
         void deleteDestination_whenUnauthorized_returns401() throws Exception {
             Long id = 1L;
-            given(destinationService.deleteDestination(id, user)).willThrow(new AccessDeniedException("Forbidden"));
 
-            mockMvc.perform(delete("/destinations/user/{id}", id)
-                            .with(user(testUserDetails)))
-                    .andExpect(status().isForbidden());
-            //and expect json
-
-            verify(destinationService, times(1)).deleteDestination(id, user);
+            performRequest(DELETE, "/destinations/" + id, destinationRequest, null)
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.error").value("UNAUTHORIZED"))
+                    .andExpect(jsonPath("$.path").value("/destinations/1"))
+                    .andExpect(jsonPath("$.status").value(401))
+                    .andExpect(jsonPath("$.message").value("Unauthorized: Full authentication is required to access this resource"));
         }
 
         @Test
         void deleteDestination_whenUserNotOwner_returns403() throws Exception {
             Long id = 1L;
-            given(destinationService.deleteDestination(id, user)).willThrow(new AccessDeniedException("Forbidden"));
+            given(destinationService.deleteDestination(eq(id), any(User.class))).willThrow(new AccessDeniedException("You are not authorized to modify or delete this destination."));
 
-            mockMvc.perform(delete("/destinations/user/{id}", id)
-                            .with(user(testUserDetails)))
-                    .andExpect(status().isForbidden());
-            //and expect json
+            performRequest(DELETE, "/destinations/" + id, null, userDetailsNotOwner)
+                    .andExpect(status().isForbidden())
+                    .andExpect(jsonPath("$.error").value("FORBIDDEN"))
+                    .andExpect(jsonPath("$.path").value("/destinations/1"))
+                    .andExpect(jsonPath("$.status").value(403))
+                    .andExpect(jsonPath("$.message").value("Forbidden: You are not authorized to modify or delete this destination."));
 
-            verify(destinationService, times(1)).deleteDestination(id, user);
+            verify(destinationService, times(1)).deleteDestination(eq(id), any(User.class));
         }
     }
 }
