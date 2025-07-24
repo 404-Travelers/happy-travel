@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -54,17 +55,25 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, status);
     }
 
-//    @ExceptionHandler(Exception.class)
-//    public ResponseEntity<ErrorResponse> handleAllUnhandledExceptions(Exception exception, HttpServletRequest req) {
-//        Map<String, String> errors = new HashMap<>();
-//
-//        String errorMessage = (exception.getMessage() != null) ? exception.getMessage() : "No detail available";
-//        String errorCause = (exception.getCause() != null) ? exception.getCause().getMessage() : "";
-//        errors.put(errorMessage, errorCause);
-//
-//        HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
-//        ErrorResponse errorResponse = new ErrorResponse(status, errors, req);
-//        return new ResponseEntity<>(errorResponse, status);
-//    }
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleEmptyOrMalformedBodyRequest(HttpMessageNotReadableException exception, HttpServletRequest request) {
+        HttpStatus status =  HttpStatus.BAD_REQUEST;
+        String message = "Request body is required and cannot be empty or malformed.";
+        ErrorResponse errorResponse = new ErrorResponse(status, message, request);
+        return new ResponseEntity<>(errorResponse, status);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleAllUnhandledExceptions(Exception exception, HttpServletRequest req) {
+        Map<String, String> errors = new HashMap<>();
+
+        String errorMessage = (exception.getMessage() != null) ? exception.getMessage() : "No detail available";
+        String errorCause = (exception.getCause() != null) ? exception.getCause().getMessage() : "";
+        errors.put(errorMessage, errorCause);
+
+        HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+        ErrorResponse errorResponse = new ErrorResponse(status, errors, req);
+        return new ResponseEntity<>(errorResponse, status);
+    }
 
 }
