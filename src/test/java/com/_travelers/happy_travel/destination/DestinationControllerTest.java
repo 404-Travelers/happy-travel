@@ -11,8 +11,7 @@ import com._travelers.happy_travel.users.User;
 import com._travelers.happy_travel.users.UserService;
 import com._travelers.happy_travel.users.dto.UserResponseShort;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -61,7 +60,7 @@ class DestinationControllerTest {
     @BeforeEach
     void setUp() {
         user = new User(1L, "Kate", "kate.dev@gmail.com", "encoded-password", Role.ADMIN, new ArrayList<>());
-        testUserDetails = new CustomUserDetail(user); // ⚠️ implements UserDetails
+        testUserDetails = new CustomUserDetail(user);
 
         userResponseShort = new UserResponseShort("Kate");
         destinationRequest = new DestinationRequest("Spain", "Valencia", "Nice", "image.jpg");
@@ -69,149 +68,182 @@ class DestinationControllerTest {
         destinationResponseShort = new DestinationResponseShort("Spain", "Valencia", "image.jpg", userResponseShort);
     }
 
-    @Test
-    void getAllDestinations_returnsListOfShortResponses() throws Exception {
-        given(destinationService.getAllDestinations()).willReturn(List.of(destinationResponseShort));
-
-        mockMvc.perform(get("/destinations")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().json(objectMapper.writeValueAsString(List.of(destinationResponseShort))));
-
-        verify(destinationService, times(1)).getAllDestinations();
+    @AfterEach
+    void afterTest(){
+        verifyNoMoreInteractions(destinationService);
     }
 
-    @Test
-    void getAllDestinations_returnsEmptyList() throws Exception {
-        given(destinationService.getAllDestinations()).willReturn(List.of());
-
-        mockMvc.perform(get("/destinations")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().json(objectMapper.writeValueAsString(List.of())));
-
-        verify(destinationService, times(1)).getAllDestinations();
+    private String asJsonString(Object object){
+        try {
+            return objectMapper.writeValueAsString(object);
+        } catch (Exception exception) {
+            throw new RuntimeException("Failed to convert object to JSON string for testing", exception);
+        }
     }
 
-    @Test
-    void getDestinationById_returnsDestinationResponse() throws Exception {
-        Long id = 1L;
-        given(destinationService.getDestinationById(id)).willReturn(destinationResponse);
+    @Nested
+    @DisplayName("GET /destinations")
+    class GetDestinationsTests {
 
-        mockMvc.perform(get("/destinations/{id}", id)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().json(objectMapper.writeValueAsString(destinationResponse)));
+        @Test
+        void getAllDestinations_returnsListOfShortResponses() throws Exception {
+            given(destinationService.getAllDestinations()).willReturn(List.of(destinationResponseShort));
 
-        verify(destinationService, times(1)).getDestinationById(eq(id));
+            mockMvc.perform(get("/destinations")
+                            .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(content().json(asJsonString(List.of(destinationResponseShort))));
+
+            verify(destinationService, times(1)).getAllDestinations();
+        }
+
+        @Test
+        void getAllDestinations_returnsEmptyList() throws Exception {
+            given(destinationService.getAllDestinations()).willReturn(List.of());
+
+            mockMvc.perform(get("/destinations")
+                            .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(content().json(asJsonString(List.of())));
+
+            verify(destinationService, times(1)).getAllDestinations();
+        }
+
+        @Test
+        void getDestinationById_returnsDestinationResponse() throws Exception {
+            Long id = 1L;
+            given(destinationService.getDestinationById(id)).willReturn(destinationResponse);
+
+            mockMvc.perform(get("/destinations/{id}", id)
+                            .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(content().json(objectMapper.writeValueAsString(destinationResponse)));
+
+            verify(destinationService, times(1)).getDestinationById(eq(id));
+        }
+
+        @Test
+        void getDestinationById_destinationNotFound_returns404() throws Exception {
+            Long id = 999L;
+            given(destinationService.getDestinationById(id)).willThrow(new EntityNotFoundException("Destination", "id", String.valueOf(id)));
+
+            mockMvc.perform(get("/destinations/{id}", id)
+                            .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isNotFound());
+        }
+
+
+        @Test
+        void getDestinationsByUserId_returnsUserDestinations() throws Exception {
+            Long userId = 1L;
+            given(destinationService.getDestinationsByUserUsername(user.getUsername())).willReturn(List.of(destinationResponse));
+
+            mockMvc.perform(get("/destinations/user")
+                            .with(user(testUserDetails))
+                            .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(content().json(objectMapper.writeValueAsString(List.of(destinationResponse))));
+
+            verify(destinationService, times(1)).getDestinationsByUserUsername(user.getUsername());
+        }
     }
 
-    @Test
-    void getDestinationById_destinationNotFound_returns404() throws Exception {
-        Long id = 999L;
-        given(destinationService.getDestinationById(id)).willThrow(new EntityNotFoundException("Destination", "id", String.valueOf(id)));
+    @Nested
+    @DisplayName("POST /destinations")
+    class AddDestinationTests {
 
-        mockMvc.perform(get("/destinations/{id}", id)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound());
+        @Test
+        void addDestination_returnsCreatedDestination() throws Exception {
+            given(destinationService.addDestination(eq(destinationRequest), eq(user)))
+                    .willReturn(destinationResponse);
+
+            mockMvc.perform(post("/destinations/user")
+                            .with(user(testUserDetails))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(destinationRequest)))
+                    .andExpect(status().isOk())
+                    .andExpect(content().json(objectMapper.writeValueAsString(destinationResponse)));
+
+            verify(destinationService, times(1)).addDestination(eq(destinationRequest), eq(user));
+        }
+
+        @Test
+        void addDestination_withoutAuthentication_returns401() throws Exception {
+            mockMvc.perform(post("/destinations/user")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(destinationRequest)))
+                    .andExpect(status().isUnauthorized());
+        }
     }
 
+    @Nested
+    @DisplayName("PUT /destinations/id")
+    class UpdateDestinationTests {
 
-    @Test
-    void getDestinationsByUserId_returnsUserDestinations() throws Exception {
-        Long userId = 1L;
-        given(destinationService.getDestinationsByUserUsername(user.getUsername())).willReturn(List.of(destinationResponse));
+        @Test
+        void updateDestination_returnsUpdated() throws Exception {
+            Long id = 1L;
+            given(destinationService.updateDestination(eq(id), eq(destinationRequest), any(User.class)))
+                    .willReturn(destinationResponse);
 
-        mockMvc.perform(get("/destinations/user")
-                        .with(user(testUserDetails))
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().json(objectMapper.writeValueAsString(List.of(destinationResponse))));
+            mockMvc.perform(put("/destinations/user/{id}", id)
+                            .with(user(testUserDetails))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(destinationRequest)))
+                    .andExpect(status().isOk())
+                    .andExpect(content().json(objectMapper.writeValueAsString(destinationResponse)));
 
-        verify(destinationService, times(1)).getDestinationsByUserUsername(user.getUsername());
+            verify(destinationService, times(1)).updateDestination(eq(id), eq(destinationRequest), any(User.class));
+        }
+
+        @Test
+        void updateDestination_whenUnauthorized_returns403() throws Exception {
+            Long id = 1L;
+            given(destinationService.updateDestination(eq(id), eq(destinationRequest), eq(user)))
+                    .willThrow(new AccessDeniedException("Forbidden")); // Simulating not allowed
+
+            mockMvc.perform(put("/destinations/user/{id}", id)
+                            .with(user(testUserDetails))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(destinationRequest)))
+                    .andExpect(status().isForbidden());
+            // and expect content
+
+            verify(destinationService, times(1)).updateDestination(eq(id), eq(destinationRequest), eq(user));
+        }
     }
 
-    @Test
-    void addDestination_returnsCreatedDestination() throws Exception {
-        given(destinationService.addDestination(eq(destinationRequest), eq(user)))
-                .willReturn(destinationResponse);
+    @Nested
+    @DisplayName("DELETE /destinations/id")
+    class DeleteDestinationTests {
 
-        mockMvc.perform(post("/destinations/user")
-                        .with(user(testUserDetails))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(destinationRequest)))
-                .andExpect(status().isOk())
-                .andExpect(content().json(objectMapper.writeValueAsString(destinationResponse)));
+        @Test
+        void deleteDestination_successful() throws Exception {
+            Long id = 1L;
+            String message = "Destination with id " + id + " deleted successfully";
+            given(destinationService.deleteDestination(id, user)).willReturn(message);
 
-        verify(destinationService, times(1)).addDestination(eq(destinationRequest), eq(user));
-    }
+            mockMvc.perform(delete("/destinations/user/{id}", id)
+                            .with(user(testUserDetails)))
+                    .andExpect(status().isOk())
+                    .andExpect(content().string(message))
+                    .andReturn();
 
-    @Test
-    void addDestination_withoutAuthentication_returns401() throws Exception {
-        mockMvc.perform(post("/destinations/user")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(destinationRequest)))
-                .andExpect(status().isUnauthorized());
-    }
+            verify(destinationService, times(1)).deleteDestination(id, user);
+        }
 
-    @Test
-    void updateDestination_returnsUpdated() throws Exception {
-        Long id = 1L;
-        given(destinationService.updateDestination(eq(id), eq(destinationRequest), any(User.class)))
-                .willReturn(destinationResponse);
+        @Test
+        void deleteDestination_unauthorized_returns403() throws Exception {
+            Long id = 1L;
+            given(destinationService.deleteDestination(id, user)).willThrow(new AccessDeniedException("Forbidden"));
 
-        mockMvc.perform(put("/destinations/user/{id}", id)
-                        .with(user(testUserDetails))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(destinationRequest)))
-                .andExpect(status().isOk())
-                .andExpect(content().json(objectMapper.writeValueAsString(destinationResponse)));
+            mockMvc.perform(delete("/destinations/user/{id}", id)
+                            .with(user(testUserDetails)))
+                    .andExpect(status().isForbidden());
+            //and expect json
 
-        verify(destinationService, times(1)).updateDestination(eq(id), eq(destinationRequest), any(User.class));
-    }
-
-    @Test
-    void updateDestination_whenUnauthorized_returns403() throws Exception {
-        Long id = 1L;
-        given(destinationService.updateDestination(eq(id), eq(destinationRequest), eq(user)))
-                .willThrow(new AccessDeniedException("Forbidden")); // Simulating not allowed
-
-        mockMvc.perform(put("/destinations/user/{id}", id)
-                        .with(user(testUserDetails))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(destinationRequest)))
-                .andExpect(status().isForbidden());
-        // and expect content
-
-        verify(destinationService, times(1)).updateDestination(eq(id), eq(destinationRequest), eq(user));
-    }
-
-    @Test
-    void deleteDestination_successful() throws Exception {
-        Long id = 1L;
-        String message = "Destination with id " + id + " deleted successfully";
-        given(destinationService.deleteDestination(id, user)).willReturn(message);
-
-        mockMvc.perform(delete("/destinations/user/{id}", id)
-                        .with(user(testUserDetails)))
-                .andExpect(status().isOk())
-                .andExpect(content().string(message))
-                        .andReturn();
-
-        verify(destinationService, times(1)).deleteDestination(id, user);
-    }
-
-    @Test
-    void deleteDestination_unauthorized_returns403() throws Exception {
-        Long id = 1L;
-        given(destinationService.deleteDestination(id, user)).willThrow(new AccessDeniedException("Forbidden"));
-
-        mockMvc.perform(delete("/destinations/user/{id}", id)
-                        .with(user(testUserDetails)))
-                .andExpect(status().isForbidden());
-        //and expect json
-
-        verify(destinationService, times(1)).deleteDestination(id, user);
+            verify(destinationService, times(1)).deleteDestination(id, user);
+        }
     }
 }
