@@ -5,6 +5,7 @@ import com._travelers.happy_travel.destinations.dto.DestinationRequest;
 import com._travelers.happy_travel.destinations.dto.DestinationResponse;
 import com._travelers.happy_travel.destinations.dto.DestinationResponseShort;
 import com._travelers.happy_travel.security.CustomUserDetail;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -25,46 +26,44 @@ public class DestinationController {
         return ResponseEntity.ok(list);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<DestinationResponse> getDestinationById(@PathVariable Long id) {
-        DestinationResponse destination = destinationService.getDestinationById(id);
+    @GetMapping("/{destinationId}")
+    public ResponseEntity<DestinationResponse> getDestinationById(@PathVariable Long destinationId) {
+        DestinationResponse destination = destinationService.getDestinationById(destinationId);
         return ResponseEntity.ok(destination);
     }
 
-    @GetMapping("/user")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<DestinationResponse>> getDestinationsByUserId(@AuthenticationPrincipal CustomUserDetail userDetail) {
-//        System.out.println(userDetail.getId());
-//        System.out.println("USER"+ userDetail.getUser());
-        List<DestinationResponse> list = destinationService.getDestinationsByUserId(userDetail.getId());
+    @GetMapping("?ownerUsername={username}")
+    public ResponseEntity<List<DestinationResponse>> getDestinationsByUserUsername(@RequestParam String username) {
+        List<DestinationResponse> list = destinationService.getDestinationsByUserUsername(username);
         return ResponseEntity.ok(list);
     }
 
-    @PostMapping("/user")
+    @PostMapping("")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<DestinationResponse> addDestination(
             @AuthenticationPrincipal CustomUserDetail userDetail,
-            @RequestBody DestinationRequest request) {
+            @RequestBody @Valid DestinationRequest request) {
+        System.out.println("MY234 USER" + userDetail.getUser().toString());
         DestinationResponse created = destinationService.addDestination(request, userDetail.getUser());
         return ResponseEntity.ok(created);
     }
 
-    @PutMapping("/user/{destinationId}")
+    @PutMapping("/{destinationId}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<DestinationResponse> updateDestination(
             @AuthenticationPrincipal CustomUserDetail userDetail,
             @PathVariable Long destinationId,
-            @RequestBody DestinationRequest request) {
+            @RequestBody @Valid DestinationRequest request) {
         DestinationResponse updated = destinationService.updateDestination(destinationId, request, userDetail.getUser());
         return ResponseEntity.ok(updated);
     }
 
-    @DeleteMapping("/user/{id}")
+    @DeleteMapping("/{destinationId}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<String> deleteDestination(
             @AuthenticationPrincipal CustomUserDetail userDetail,
-            @PathVariable Long id) {
-        String message = destinationService.deleteDestination(id, userDetail.getUser());
+            @PathVariable Long destinationId) {
+        String message = destinationService.deleteDestination(destinationId, userDetail.getUser());
         return ResponseEntity.ok(message);
     }
 }

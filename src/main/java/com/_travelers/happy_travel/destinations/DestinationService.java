@@ -7,6 +7,7 @@ import com._travelers.happy_travel.destinations.dto.DestinationResponseShort;
 import com._travelers.happy_travel.exceptions.EntityNotFoundException;
 import com._travelers.happy_travel.users.Role;
 import com._travelers.happy_travel.users.User;
+import com._travelers.happy_travel.users.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,11 +19,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DestinationService {
     private final DestinationRepository destinationRepository;
+    private final UserService userService;
 
     public List<DestinationResponseShort> getAllDestinations(){
         List<Destination> destinations = destinationRepository.findAll();
-        return destinations.stream().map(DestinationMapper::toDtoShort)
-                .toList();
+        return listToDtoShort(destinations);
     }
 
     public List<DestinationResponse> getFilteredDestinations(String city, String country) {
@@ -41,9 +42,7 @@ public class DestinationService {
             filtered = destinationRepository.findAll();
         }
 
-        return filtered.stream()
-                .map(DestinationMapper::toDto)
-                .toList();
+        return listToDto(filtered);
     }
 
     public DestinationResponse getDestinationById(Long id){
@@ -52,14 +51,10 @@ public class DestinationService {
         return DestinationMapper.toDto(destination);
     }
 
-    @PreAuthorize("isAuthenticated()")
-    public List<DestinationResponse> getDestinationsByUserId(Long userId){
-        List<Destination> destinations = destinationRepository.findAll()
-                .stream()
-                .filter(destination->destination.getUser() != null && destination.getUser().getId().equals(userId))
-                .toList();
-
-        return destinations.stream()
+    public List<DestinationResponse> getDestinationsByUserUsername(String username){
+        User user = userService.getByUsername(username);
+        List<Destination> list = destinationRepository.findByUser(user);
+        return list.stream()
                 .map(DestinationMapper::toDto)
                 .toList();
     }
@@ -67,16 +62,13 @@ public class DestinationService {
     @PreAuthorize("isAuthenticated()")
     public DestinationResponse addDestination(DestinationRequest destinationRequest, User user) {
         Destination destination = DestinationMapper.toEntity(destinationRequest, user);
-        assertUserIsOwner(destination, user);
         Destination savedDestination = destinationRepository.save(destination);
         return DestinationMapper.toDto(savedDestination);
     }
 
     @PreAuthorize("isAuthenticated()")
     public DestinationResponse updateDestination(Long id, DestinationRequest request, User user) {
-        Destination destination = destinationRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Destination", "id", id.toString()));
-
+        Destination destination = findDestinationOrThrow(id);
         assertUserIsOwner(destination, user);
 
         destination.setCountry(request.country());
@@ -99,7 +91,7 @@ public class DestinationService {
     private Destination findDestinationOrThrow(Long id) {
     return destinationRepository.findById(id)
             .orElseThrow(() -> new EntityNotFoundException("Destination", "id", id.toString()));
-}
+    }
 
 
     private void assertUserIsOwner(Destination destination, User user) {
@@ -112,5 +104,17 @@ public class DestinationService {
         if (!destination.getUser().getId().equals(user.getId()) && !user.hasRole(Role.ROLE_ADMIN)) {
             throw new AccessDeniedException("You are not authorized to modify or delete this destination.");
         }
+    }
+
+    private List<DestinationResponse> listToDto (List<Destination> destinations){
+        return destinations.stream()
+                .map(DestinationMapper::toDto)
+                .toList();
+    }
+
+    private List<DestinationResponseShort> listToDtoShort (List<Destination> destinations){
+        return destinations.stream()
+                .map(DestinationMapper::toDtoShort)
+                .toList();
     }
 }

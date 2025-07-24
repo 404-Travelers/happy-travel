@@ -1,6 +1,7 @@
 package com._travelers.happy_travel.security.jwt;
 
 import com._travelers.happy_travel.users.UserService;
+import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -27,8 +28,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+                                    @NonNull HttpServletResponse response,
+                                    @NonNull FilterChain filterChain) throws ServletException, IOException {
+
+        System.out.println("JwtAuthFilter engaged for URL: {}" + request.getRequestURI());
 
         String authHeader = request.getHeader("Authorization");
 
