@@ -65,7 +65,7 @@ public class DestinationServiceTest {
     }
 
     @Nested
-    @DisplayName("GET /destinations")
+    @DisplayName("GET destinations")
     class GetDestinationsTests{
 
         @Test
@@ -141,7 +141,7 @@ public class DestinationServiceTest {
         }
 
         @Test
-        void getDestinationsByUserUsername_whenDestinationExists_returnsDestinationsList() {
+        void getDestinationsByUserUsername_whenDestinationsExists_returnsDestinationsList() {
             String username = user.getUsername();
             when(userService.getByUsername(eq(username))).thenReturn(user);
             when(destinationRepository.findByUser(eq(user))).thenReturn(List.of(destination));
@@ -153,7 +153,7 @@ public class DestinationServiceTest {
         }
 
         @Test
-        void getDestinationsByUserUsername_whenDestinationDoesNotExist_returnsException() {
+        void getDestinationsByUserUsername_whenDestinationsEmpty_returnsEmptyList() {
             String username = user.getUsername();
             when(userService.getByUsername(eq(username))).thenReturn(user);
             when(destinationRepository.findByUser(eq(user))).thenReturn(List.of());
@@ -163,82 +163,60 @@ public class DestinationServiceTest {
             verify(destinationRepository, times(1)).findByUser(any(User.class));
             verify(userService, times(1)).getByUsername(eq(username));
         }
+
+        @Test
+        void getDestinationsByUserUsername_whenUserDoesNotExist_returnsException() {
+            String username = user.getUsername();
+            when(userService.getByUsername(eq(username))).thenThrow( new EntityNotFoundException(User.class.getSimpleName(), "username", username));
+            String expectedMessage = "User with username " + username + " not found";
+
+            Exception exception = assertThrows(EntityNotFoundException.class, () -> destinationService.getDestinationsByUserUsername(username));
+            assertEquals(expectedMessage, exception.getMessage());
+            verify(userService, times(1)).getByUsername(eq(username));
+        }
     }
 
     @Nested
-    @DisplayName("POST /destinations")
+    @DisplayName("ADD destinations")
     class AddDestinationsTests {
 
-    }
-//    @Test
-//    void getDestinationsByUserId_whenDestinationExists_returnsDestinationsList() {
-//        Long userId = 1L;
-//        List<DestinationResponse> expectedResult = List.of(
-//                new DestinationResponseShort());
-//        when(destinationRepository.findByUserId(eq(userId))).thenReturn(Optional.of(List.of(
-//                new Destination())));
-//
-//        List<DestinationResponse> result = destinationService.getDestinationByUserId(userId);
-//        assertEquals(expectedResult, result);
-//        verify(destinationRepository, times(1)).findByUserId(userId);
-//    }
-//
-//    @Test
-//    void getDestinationsByUserId_whenDestinationDoesNotExist_returnsException() {
-//        Long userId = 1L;
-//        String expectedMessage = "Destination with userId " + userId + " was not found";
-//        when(destinationRepository.findByUserId(anyString())).thenReturn(Optional.empty());
-//
-//        Exception exception = assertThrows(EntityNotFoundException.class, () -> destinationService.getDestinationByUserId(userId));
-//        assertEquals(expectedMessage, exception.getMessage());
-//        verify(destinationRepository, times(1)).findByUserId(userId);
-//    }
-//
-    @Test
-    void addDestination_whenDestinationIsNewForUser_returnsDestinationResponse(){
-        when(destinationRepository.save(any(Destination.class))).thenReturn(destination);
+        @Test
+        void addDestination_whenValidRequest_returnsDestinationResponse(){
+            when(destinationRepository.save(any(Destination.class))).thenReturn(destination);
 
-        DestinationResponse result = destinationService.addDestination(destinationRequest, user);
-        assertEquals(destinationResponse, result);
-        verify(destinationRepository, times(1)).save(any(Destination.class));
+            DestinationResponse result = destinationService.addDestination(destinationRequest, user);
+            assertEquals(destinationResponse, result);
+            verify(destinationRepository, times(1)).save(any(Destination.class));
+        }
     }
 
-//    @Test
-//    void addDestination_whenDestinationAlreadyExistsForUser_returnsException(){
-//        DestinationRequest destinationRequest = new DestinationRequest();
-//        String expectedMessage = "Destination with city City and country Country for user " + username + " already exists";
-//        when(destinationRepository.findByUserIdAndCityAndCountry(anyString())).thenReturn(Optional.of(
-//                new Destination()));
-//
-//        Exception exception = assertThrows(EntityAlreadyExistsException.class, () -> destinationService.addDestination(destinationRequest));
-//        assertEquals(expectedMessage, exception.getMessage());
-//        verify(destinationRepository, times(1)).findByUserId(userId);
-//    }
+    @Nested
+    @DisplayName("UPDATE destinations")
+    class UpdateDestinationsTests {
 
-    @Test
-    void updateDestination_whenDestinationUpdateIsSuccessful_returnsDestinationResponse(){
-        Long id = 1L;
-        when(destinationRepository.findById(eq(id))).thenReturn(Optional.of(destination));
-        when(destinationRepository.save(any(Destination.class))).thenReturn(destination);
+        @Test
+        void updateDestination_whenDestinationUpdateIsSuccessful_returnsDestinationResponse(){
+            Long id = 1L;
+            when(destinationRepository.findById(eq(id))).thenReturn(Optional.of(destination));
+            when(destinationRepository.save(any(Destination.class))).thenReturn(destination);
 
-        DestinationResponse result = destinationService.updateDestination(id, destinationRequest, user);
-        assertEquals(destinationResponse, result);
-        verify(destinationRepository, times(1)).save(destination);
+            DestinationResponse result = destinationService.updateDestination(id, destinationRequest, user);
+            assertEquals(destinationResponse, result);
+            verify(destinationRepository, times(1)).save(destination);
+        }
+
+        @Test
+        void updateDestination_whenDestinationNotFound_returnsDestinationResponse(){
+            Long id = 1L;
+            when(destinationRepository.findById(eq(id))).thenReturn(Optional.of(destination));
+            when(destinationRepository.save(any(Destination.class))).thenReturn(destination);
+
+            DestinationResponse result = destinationService.updateDestination(id, destinationRequest, user);
+            assertEquals(destinationResponse, result);
+            verify(destinationRepository, times(1)).save(destination);
+        }
     }
-//
-//    @Test
-//    void updateDestination_whenDestinationAlreadyExistsForUser_returnsException(){
-//        DestinationRequest destinationRequest = new DestinationRequest();
-//        Destination destination = new Destination();
-//        String username = "";
-//        String expectedMessage = "Destination with city City and country Country for user " + username + " already exists";
-//        when(destinationRepository.findByUserIdAndCityAndCountry(anyString())).thenReturn(Optional.of(destination));
-//
-//        Exception exception = assertThrows(EntityAlreadyExistsException.class, () -> destinationService.updateDestination(destinationRequest));
-//        assertEquals(expectedMessage, exception.getMessage());
-//        verify(destinationRepository, times(1)).findByUserId(userId);
-//    }
-//
+
     @Test
     void deleteDestination_whenDestinationExists_returnsMessage() {
         Long id  = 1L;

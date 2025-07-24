@@ -13,7 +13,6 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
-import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,7 +51,6 @@ public class DestinationService {
 
     public List<DestinationResponse> getDestinationsByUserUsername(String username){
         User user = userService.getByUsername(username);
-        System.out.println("primero username" + username + "ahora el user" + user.getUsername());
         List<Destination> listToDto = destinationRepository.findByUser(user);
         return listToDto(listToDto);
     }
