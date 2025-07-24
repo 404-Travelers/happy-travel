@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.*;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -86,11 +87,10 @@ class DestinationControllerTest {
     class GetDestinationsTests {
 
         @Test
-        void getAllDestinations_returnsListOfShortResponses() throws Exception {
+        void getAllDestinations_returnsDestinationsList() throws Exception {
             given(destinationService.getAllDestinations()).willReturn(List.of(destinationResponseShort));
 
-            mockMvc.perform(get("/destinations")
-                            .accept(MediaType.APPLICATION_JSON))
+            mockMvc.perform(get("/destinations"))
                     .andExpect(status().isOk())
                     .andExpect(content().json(asJsonString(List.of(destinationResponseShort))));
 
@@ -101,8 +101,7 @@ class DestinationControllerTest {
         void getAllDestinations_returnsEmptyList() throws Exception {
             given(destinationService.getAllDestinations()).willReturn(List.of());
 
-            mockMvc.perform(get("/destinations")
-                            .accept(MediaType.APPLICATION_JSON))
+            mockMvc.perform(get("/destinations"))
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andExpect(content().json(asJsonString(List.of())));
@@ -111,41 +110,59 @@ class DestinationControllerTest {
         }
 
         @Test
-        void getDestinationById_returnsDestinationResponse() throws Exception {
+        void getDestinationById_whenDestinationExists_returnsDestination() throws Exception {
             Long id = 1L;
             given(destinationService.getDestinationById(id)).willReturn(destinationResponse);
 
-            mockMvc.perform(get("/destinations/{id}", id)
-                            .accept(MediaType.APPLICATION_JSON))
+            mockMvc.perform(get("/destinations/id/{id}", id))
                     .andExpect(status().isOk())
-                    .andExpect(content().json(objectMapper.writeValueAsString(destinationResponse)));
+                    .andExpect(content().json(asJsonString(destinationResponse)));
 
             verify(destinationService, times(1)).getDestinationById(eq(id));
         }
 
         @Test
-        void getDestinationById_destinationNotFound_returns404() throws Exception {
+        void getDestinationById_whenDestinationDoesNotExist_returnsException() throws Exception {
             Long id = 999L;
+            String expectedMessage = "Destination with id " + id + " not found";
             given(destinationService.getDestinationById(id)).willThrow(new EntityNotFoundException("Destination", "id", String.valueOf(id)));
 
-            mockMvc.perform(get("/destinations/{id}", id)
-                            .accept(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isNotFound());
+            mockMvc.perform(get("/destinations/id/{id}", id))
+                    .andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.error").value("NOT_FOUND"))
+                    .andExpect(jsonPath("$.path").value("/destinations/id/" + id))
+                    .andExpect(jsonPath("$.status").value(HttpStatus.NOT_FOUND.value()))
+                    .andExpect(jsonPath("$.message").value(expectedMessage));
+
+            verify(destinationService, times(1)).getDestinationById(eq(id));
         }
 
 
         @Test
-        void getDestinationsByUserId_returnsUserDestinations() throws Exception {
-            Long userId = 1L;
+        void getDestinationsByUserUsername_whenUserExists_returnsDestinationsList() throws Exception {
             given(destinationService.getDestinationsByUserUsername(user.getUsername())).willReturn(List.of(destinationResponse));
 
-            mockMvc.perform(get("/destinations/user")
-                            .with(user(testUserDetails))
-                            .accept(MediaType.APPLICATION_JSON))
+            mockMvc.perform(get("/destinations/user?username={username}", user.getUsername()))
                     .andExpect(status().isOk())
-                    .andExpect(content().json(objectMapper.writeValueAsString(List.of(destinationResponse))));
+                    .andExpect(content().json(asJsonString(List.of(destinationResponse))));
 
             verify(destinationService, times(1)).getDestinationsByUserUsername(user.getUsername());
+        }
+
+        @Test
+        void getDestinationsByUserUsername_whenUserDoesNotExist_returnsException() throws Exception {
+            String username = "No user";
+            String expectedMessage = "User with username " + username + " not found";
+            given(destinationService.getDestinationsByUserUsername(username)).willThrow(new EntityNotFoundException("User", "username", username));
+
+            mockMvc.perform(get("/destinations/user?username={username}", username))
+                    .andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.error").value("NOT_FOUND"))
+                    .andExpect(jsonPath("$.path").value("/destinations/user"))
+                    .andExpect(jsonPath("$.status").value(HttpStatus.NOT_FOUND.value()))
+                    .andExpect(jsonPath("$.message").value(expectedMessage));
+
+            verify(destinationService, times(1)).getDestinationsByUserUsername(username);
         }
     }
 
@@ -161,9 +178,9 @@ class DestinationControllerTest {
             mockMvc.perform(post("/destinations/user")
                             .with(user(testUserDetails))
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(destinationRequest)))
+                            .content(asJsonString(destinationRequest)))
                     .andExpect(status().isOk())
-                    .andExpect(content().json(objectMapper.writeValueAsString(destinationResponse)));
+                    .andExpect(content().json(asJsonString(destinationResponse)));
 
             verify(destinationService, times(1)).addDestination(eq(destinationRequest), eq(user));
         }
@@ -172,7 +189,7 @@ class DestinationControllerTest {
         void addDestination_withoutAuthentication_returns401() throws Exception {
             mockMvc.perform(post("/destinations/user")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(destinationRequest)))
+                            .content(asJsonString(destinationRequest)))
                     .andExpect(status().isUnauthorized());
         }
     }
@@ -190,9 +207,9 @@ class DestinationControllerTest {
             mockMvc.perform(put("/destinations/user/{id}", id)
                             .with(user(testUserDetails))
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(destinationRequest)))
+                            .content(asJsonString(destinationRequest)))
                     .andExpect(status().isOk())
-                    .andExpect(content().json(objectMapper.writeValueAsString(destinationResponse)));
+                    .andExpect(content().json(asJsonString(destinationResponse)));
 
             verify(destinationService, times(1)).updateDestination(eq(id), eq(destinationRequest), any(User.class));
         }
@@ -206,7 +223,7 @@ class DestinationControllerTest {
             mockMvc.perform(put("/destinations/user/{id}", id)
                             .with(user(testUserDetails))
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(destinationRequest)))
+                            .content(asJsonString(destinationRequest)))
                     .andExpect(status().isForbidden());
             // and expect content
 
