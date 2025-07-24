@@ -29,8 +29,8 @@ public class DataSeeder {
                 return;
             }
 
-            User user1 = new User(null,"johndoe", "john@example.com", passwordEncoder.encode("password123"), Role.ROLE_USER, new ArrayList<>());
-            User user2 = new User(null, "moderator", "mod@example.com", passwordEncoder.encode("modpass12"), Role.ROLE_USER, new ArrayList<>());
+            User user1 = new User(null,"johndoe", "john@example.com", passwordEncoder.encode("password123"), Role.USER, new ArrayList<>());
+            User user2 = new User(null, "moderator", "mod@example.com", passwordEncoder.encode("modpass12"), Role.USER, new ArrayList<>());
             userRepository.saveAll(Arrays.asList(user1, user2));
             System.out.println("Sample users seeded.");
 
