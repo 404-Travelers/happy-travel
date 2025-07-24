@@ -26,13 +26,19 @@ public class DestinationController {
         return ResponseEntity.ok(list);
     }
 
-    @GetMapping("/{destinationId}")
+    @GetMapping("/filter")
+    public ResponseEntity<List<DestinationResponse>> getFilteredDestinations(@RequestParam (required = false) String city, @RequestParam (required = false) String country)  {
+        List<DestinationResponse> list = destinationService.getFilteredDestinations(city, country);
+        return ResponseEntity.ok(list);
+    }
+
+    @GetMapping("/id/{destinationId}")
     public ResponseEntity<DestinationResponse> getDestinationById(@PathVariable Long destinationId) {
         DestinationResponse destination = destinationService.getDestinationById(destinationId);
         return ResponseEntity.ok(destination);
     }
 
-    @GetMapping("?ownerUsername={username}")
+    @GetMapping("/user")
     public ResponseEntity<List<DestinationResponse>> getDestinationsByUserUsername(@RequestParam String username) {
         List<DestinationResponse> list = destinationService.getDestinationsByUserUsername(username);
         return ResponseEntity.ok(list);
