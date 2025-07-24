@@ -14,6 +14,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.sql.SQLOutput;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -28,8 +29,7 @@ public class DestinationService {
     }
 
     public List<DestinationResponse> getFilteredDestinations(String city, String country) {
-        List<Destination> filtered;
-        System.out.println("ahora la ciudad" + city + "ahora el pais" + country);
+        List<Destination> filtered = new ArrayList<>();
         boolean cityIsEmpty = city == null || city.isBlank();
         boolean countryIsEmpty = country == null || country.isBlank();
 
@@ -39,9 +39,6 @@ public class DestinationService {
             filtered = destinationRepository.findByCityContainingIgnoreCase(city);
         } else if (!countryIsEmpty) {
             filtered = destinationRepository.findByCountryContainingIgnoreCase(country);
-        } else {
-            System.out.println("ahora la ciudad antes de find all" + city + "ahora el pais antes de find all" + country);
-            filtered = destinationRepository.findAll();
         }
 
         return listToDto(filtered);

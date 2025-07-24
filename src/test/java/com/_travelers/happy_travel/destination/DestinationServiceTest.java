@@ -15,13 +15,16 @@ import com._travelers.happy_travel.users.dto.UserResponse;
 import com._travelers.happy_travel.users.dto.UserResponseShort;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.Nested;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -57,36 +60,81 @@ public class DestinationServiceTest {
         verifyNoMoreInteractions(destinationRepository);
     }
 
-    @Test
-    void getAllDestinations_whenDestinationsExist_returnsListOfDestinationsResponseShort() {
-        when(destinationRepository.findAll()).thenReturn(List.of(destination));
+    @Nested
+    @DisplayName("GET /destinations")
+    class GetDestinationsTests{
 
-        List<DestinationResponseShort> result = destinationService.getAllDestinations();
-        assertEquals(List.of(destinationResponseShort), result);
-        verify(destinationRepository, times(1)).findAll();
-    }
+        @Test
+        void getAllDestinations_whenDestinationsExist_returnsListOfDestinationsResponseShort() {
+            when(destinationRepository.findAll()).thenReturn(List.of(destination));
 
-    //getFilteredDestinations
+            List<DestinationResponseShort> result = destinationService.getAllDestinations();
+            assertEquals(List.of(destinationResponseShort), result);
+            verify(destinationRepository, times(1)).findAll();
+        }
 
-    @Test
-    void getDestinationById_whenDestinationExists_returnsDestination() {
-        Long id = 1L;
-        when(destinationRepository.findById(eq(id))).thenReturn(Optional.of(destination));
+        @Test
+        void getAllDestinations_whenDestinationsEmpty_returnsEmptyList() {
+            when(destinationRepository.findAll()).thenReturn(List.of());
 
-        DestinationResponse result = destinationService.getDestinationById(id);
-        assertEquals(destinationResponse, result);
-        verify(destinationRepository, times(1)).findById(id);
-    }
+            List<DestinationResponseShort> result = destinationService.getAllDestinations();
+            assertEquals(Collections.emptyList(), result);
+            verify(destinationRepository, times(1)).findAll();
+        }
 
-    @Test
-    void getDestinationById_whenDestinationDoesNotExist_returnsException() {
-        Long id = 1L;
-        Exception expectedException = new EntityNotFoundException(Destination.class.getSimpleName(), "id", id.toString());
-        when(destinationRepository.findById(eq(id))).thenReturn(Optional.empty());
+        @Test
+        void getFilteredDestinations_whenCityAndCountryPresent_returnsListOfDestinationsResponse() {
+            when(destinationRepository.findByCityContainingIgnoreCaseAndCountryContainingIgnoreCase(eq("rome"), eq("italy"))).thenReturn(List.of(destination));
 
-        Exception resultException = assertThrows(EntityNotFoundException.class, () -> destinationService.getDestinationById(id));
-        assertEquals(expectedException.getMessage(), resultException.getMessage());
-        verify(destinationRepository, times(1)).findById(id);
+            List<DestinationResponse> result = destinationService.getFilteredDestinations("rome", "italy");
+            assertEquals(List.of(destinationResponse), result);
+            verify(destinationRepository, times(1)).findByCityContainingIgnoreCaseAndCountryContainingIgnoreCase(eq("rome"), eq("italy"));
+        }
+
+        @Test
+        void getFilteredDestinations_whenCityPresent_returnsListOfDestinationsResponse() {
+            when(destinationRepository.findByCityContainingIgnoreCase(eq("Rome"))).thenReturn(List.of(destination));
+
+            List<DestinationResponse> result = destinationService.getFilteredDestinations("Rome", null);
+            assertEquals(List.of(destinationResponse), result);
+            verify(destinationRepository, times(1)).findByCityContainingIgnoreCase(eq("Rome"));
+        }
+
+        @Test
+        void getFilteredDestinations_whenCountryPresent_returnsListOfDestinationsResponse() {
+            when(destinationRepository.findByCountryContainingIgnoreCase(eq("Italy"))).thenReturn(List.of(destination));
+
+            List<DestinationResponse> result = destinationService.getFilteredDestinations(null, "Italy");
+            assertEquals(List.of(destinationResponse), result);
+            verify(destinationRepository, times(1)).findByCountryContainingIgnoreCase(eq("Italy"));
+        }
+
+        @Test
+        void getFilteredDestinations_whenNoParameters_returnsEmptyList() {
+            List<DestinationResponse> result = destinationService.getFilteredDestinations("", null);
+            assertEquals(Collections.emptyList(), result);
+        }
+
+        @Test
+        void getDestinationById_whenDestinationExists_returnsDestination() {
+            Long id = 1L;
+            when(destinationRepository.findById(eq(id))).thenReturn(Optional.of(destination));
+
+            DestinationResponse result = destinationService.getDestinationById(id);
+            assertEquals(destinationResponse, result);
+            verify(destinationRepository, times(1)).findById(id);
+        }
+
+        @Test
+        void getDestinationById_whenDestinationDoesNotExist_returnsException() {
+            Long id = 1L;
+            Exception expectedException = new EntityNotFoundException(Destination.class.getSimpleName(), "id", id.toString());
+            when(destinationRepository.findById(eq(id))).thenReturn(Optional.empty());
+
+            Exception resultException = assertThrows(EntityNotFoundException.class, () -> destinationService.getDestinationById(id));
+            assertEquals(expectedException.getMessage(), resultException.getMessage());
+            verify(destinationRepository, times(1)).findById(id);
+        }
     }
 
 //    @Test
