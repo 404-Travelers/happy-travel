@@ -40,7 +40,7 @@ public class UserServiceTest {
 
     @BeforeEach
     void setUp() {
-        user  = new User(1L, "Kate", "kate.dev@gmail.com", "encoded-password", Role.ROLE_USER, new ArrayList<Destination>());;
+        user  = new User(1L, "Kate", "kate.dev@gmail.com", "encoded-password", Role.USER, new ArrayList<Destination>());;
         userResponse = new UserResponse("Kate", "kate.dev@gmail.com", "ROLE_USER");
         userRegisterRequest = new UserRegisterRequest("Kate", "kate.dev@gmail.com", "mypass1234*");
     }
@@ -75,7 +75,7 @@ public class UserServiceTest {
         Long id = 1L;
         UserResponse expectedResult = userResponse;
         when(userRepository.findById(eq(id))).thenReturn(Optional.of(user));
-        UserResponse result = userService.getUserById(id);
+        UserResponse result = userService.getUserByIdAdmin(id);
 
         assertEquals(expectedResult, result);
         verify(userRepository, times(1)).findById(id);
@@ -87,7 +87,7 @@ public class UserServiceTest {
         Exception expectedException = new EntityNotFoundException(User.class.getSimpleName(), "id", id.toString());
         when(userRepository.findById(eq(id))).thenReturn(Optional.empty());
 
-        Exception resultException = assertThrows(EntityNotFoundException.class, () -> userService.getUserById(id));
+        Exception resultException = assertThrows(EntityNotFoundException.class, () -> userService.getUserByIdAdmin(id));
         assertEquals(expectedException.getMessage(), resultException.getMessage());
         verify(userRepository, times(1)).findById(id);
     }
@@ -145,7 +145,7 @@ public class UserServiceTest {
         Long id = 1L;
         when(userRepository.save(any(User.class))).thenReturn(user);
         when(userRepository.findById(id)).thenReturn(Optional.of(user));
-        UserResponse result = userService.updateUser(1L, userRegisterRequest);
+        UserResponse result = userService.updateOwnUser(1L, userRegisterRequest);
 
         assertEquals(userResponse, result);
         verify(userRepository, times(1)).findById(id);
@@ -158,7 +158,7 @@ public class UserServiceTest {
         String expectedMessage = "User with id " + id + " not found";
         when(userRepository.findById(eq(id))).thenReturn(Optional.empty());
 
-        Exception exception = assertThrows(EntityNotFoundException.class, () -> userService.updateUser(id, userRegisterRequest));
+        Exception exception = assertThrows(EntityNotFoundException.class, () -> userService.updateOwnUser(id, userRegisterRequest));
         assertEquals(expectedMessage, exception.getMessage());
         verify(userRepository, times(1)).findById(id);
     }
@@ -172,7 +172,7 @@ public class UserServiceTest {
         when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
 
 
-        Exception exception = assertThrows(EntityAlreadyExistsException.class, () -> userService.updateUser(id, userRegisterRequest));
+        Exception exception = assertThrows(EntityAlreadyExistsException.class, () -> userService.updateOwnUser(id, userRegisterRequest));
         assertEquals(expectedMessage, exception.getMessage());
         verify(userRepository, times(1)).findById(id);
         verify(userRepository, times(1)).findByUsername(userRegisterRequest.username());
@@ -188,7 +188,7 @@ void updateUser_whenUsernameChangedAndNotExists_returnsUpdatedUser() {
     when(passwordEncoder.encode(any())).thenReturn("encoded-password");
     when(userRepository.save(any(User.class))).thenReturn(user);
 
-    UserResponse result = userService.updateUser(id, userRegisterRequest);
+    UserResponse result = userService.updateOwnUser(id, userRegisterRequest);
 
     assertEquals(userResponse, result);
     verify(userRepository, times(1)).findById(id);
@@ -204,7 +204,7 @@ void updateUser_whenUsernameChangedAndNotExists_returnsUpdatedUser() {
         String expectedMessage = "User with id " + id + " deleted successfully";
         when(userRepository.existsById(eq(id))).thenReturn(true);
         doNothing().when(userRepository).deleteById(eq(id));
-        String result = userService.deleteUser(id);
+        String result = userService.deleteOwnUser(id);
 
         assertEquals(expectedMessage, result);
         verify(userRepository, times(1)).existsById(id);
@@ -217,7 +217,7 @@ void updateUser_whenUsernameChangedAndNotExists_returnsUpdatedUser() {
         String expectedMessage = "User with id " + id + " not found";
         when(userRepository.existsById(eq(id))).thenReturn(false);
 
-        Exception exception = assertThrows(EntityNotFoundException.class, () -> userService.deleteUser(id));
+        Exception exception = assertThrows(EntityNotFoundException.class, () -> userService.deleteOwnUser(id));
 
         assertEquals(expectedMessage, exception.getMessage());
         verify(userRepository, times(1)).existsById(id);

@@ -9,7 +9,7 @@ import com._travelers.happy_travel.security.CustomUserDetail;
 import com._travelers.happy_travel.users.Role;
 import com._travelers.happy_travel.users.User;
 import com._travelers.happy_travel.users.UserService;
-import com._travelers.happy_travel.users.dto.UserResponse;
+import com._travelers.happy_travel.users.dto.UserResponseShort;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -56,17 +56,17 @@ class DestinationControllerTest {
     private DestinationRequest destinationRequest;
     private DestinationResponse destinationResponse;
     private DestinationResponseShort destinationResponseShort;
-    private UserResponse userResponse;
+    private UserResponseShort userResponseShort;
 
     @BeforeEach
     void setUp() {
-        user = new User(1L, "Kate", "kate.dev@gmail.com", "encoded-password", Role.ROLE_ADMIN, new ArrayList<>());
+        user = new User(1L, "Kate", "kate.dev@gmail.com", "encoded-password", Role.ADMIN, new ArrayList<>());
         testUserDetails = new CustomUserDetail(user); // ⚠️ implements UserDetails
 
-        userResponse = new UserResponse("Kate", "kate.dev@gmail.com", "ROLE_USER");
+        userResponseShort = new UserResponseShort("Kate");
         destinationRequest = new DestinationRequest("Spain", "Valencia", "Nice", "image.jpg");
-        destinationResponse = new DestinationResponse("Spain", "Valencia", "Nice", "image.jpg", userResponse);
-        destinationResponseShort = new DestinationResponseShort("Spain", "Valencia", "image.jpg", userResponse);
+        destinationResponse = new DestinationResponse("Spain", "Valencia", "Nice", "image.jpg", userResponseShort);
+        destinationResponseShort = new DestinationResponseShort("Spain", "Valencia", "image.jpg", userResponseShort);
     }
 
     @Test
@@ -121,7 +121,7 @@ class DestinationControllerTest {
     @Test
     void getDestinationsByUserId_returnsUserDestinations() throws Exception {
         Long userId = 1L;
-        given(destinationService.getDestinationsByUserId(user.getId())).willReturn(List.of(destinationResponse));
+        given(destinationService.getDestinationsByUserUsername(user.getUsername())).willReturn(List.of(destinationResponse));
 
         mockMvc.perform(get("/destinations/user")
                         .with(user(testUserDetails))
@@ -129,7 +129,7 @@ class DestinationControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(List.of(destinationResponse))));
 
-        verify(destinationService, times(1)).getDestinationsByUserId(user.getId());
+        verify(destinationService, times(1)).getDestinationsByUserUsername(user.getUsername());
     }
 
     @Test

@@ -12,6 +12,7 @@ import com._travelers.happy_travel.destinations.dto.DestinationResponse;
 import com._travelers.happy_travel.users.Role;
 import com._travelers.happy_travel.users.User;
 import com._travelers.happy_travel.users.dto.UserResponse;
+import com._travelers.happy_travel.users.dto.UserResponseShort;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,11 +45,11 @@ public class DestinationServiceTest {
 
     @BeforeEach
     void setUp() {
-        user = new User(1L, "Kate", "kate.dev@gmail.com", "encoded-password", Role.ROLE_USER, new ArrayList<Destination>());
+        user = new User(1L, "Kate", "kate.dev@gmail.com", "encoded-password", Role.USER, new ArrayList<Destination>());
         destination = new Destination(1L, "Spain", "Valencia", "Nice", "image.jpg", user);
         destinationRequest = new DestinationRequest("Spain", "Valencia","Nice", "image.jpg");
-        destinationResponse = new DestinationResponse("Spain", "Valencia","Nice", "image.jpg", new UserResponse("Kate", "kate.dev@gmail.com", "ROLE_USER"));
-        destinationResponseShort = new DestinationResponseShort("Spain", "Valencia", "image.jpg", new UserResponse("Kate", "kate.dev@gmail.com", "ROLE_USER"));
+        destinationResponse = new DestinationResponse("Spain", "Valencia","Nice", "image.jpg", new UserResponseShort("Kate"));
+        destinationResponseShort = new DestinationResponseShort("Spain", "Valencia", "image.jpg", new UserResponseShort("Kate"));
     }
 
     @AfterEach
