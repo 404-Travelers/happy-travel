@@ -54,16 +54,16 @@ public class SecurityConfig {
         return new JwtAuthFilter(jwtService, userService);
     }
 
-    @Bean
-    public AccessDeniedHandler accessDeniedHandler() {
-        return (request, response, exception) -> {
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            response.setContentType("application/json");
-            ErrorResponse error = ErrorResponse.fromSecurityException(
-                    HttpStatus.FORBIDDEN, exception, request);
-            objectMapper().writeValue(response.getWriter(), error);
-        };
-    }
+//    @Bean
+//    public AccessDeniedHandler accessDeniedHandler() {
+//        return (request, response, exception) -> {
+//            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+//            response.setContentType("application/json");
+//            ErrorResponse error = new ErrorResponse(
+//                    HttpStatus.FORBIDDEN, "Forbidden: " + exception.getMessage(), request);
+//            objectMapper().writeValue(response.getWriter(), error);
+//        };
+//    }
 
 
     @Bean
@@ -99,8 +99,8 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(exceptionHandling -> exceptionHandling
-                        .authenticationEntryPoint(authenticationEntryPoint())
-                        .accessDeniedHandler(accessDeniedHandler()))
+                        .authenticationEntryPoint(authenticationEntryPoint()))
+//                        .accessDeniedHandler(accessDeniedHandler()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
                                 "/swagger-resources/**", "/webjars/**").permitAll()

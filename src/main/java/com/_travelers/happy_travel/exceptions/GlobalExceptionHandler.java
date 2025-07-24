@@ -1,10 +1,14 @@
 package com._travelers.happy_travel.exceptions;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.ConstraintViolationException;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -60,6 +64,13 @@ public class GlobalExceptionHandler {
         HttpStatus status =  HttpStatus.BAD_REQUEST;
         String message = "Request body is required and cannot be empty or malformed.";
         ErrorResponse errorResponse = new ErrorResponse(status, message, request);
+        return new ResponseEntity<>(errorResponse, status);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException exception, HttpServletRequest request) {
+        HttpStatus status =  HttpStatus.FORBIDDEN;
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.FORBIDDEN, "Forbidden: " + exception.getMessage(), request);
         return new ResponseEntity<>(errorResponse, status);
     }
 
