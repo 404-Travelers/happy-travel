@@ -54,6 +54,7 @@ class DestinationControllerTest {
 
     private User user;
     private UserDetails testUserDetails;
+    private UserDetails userDetailsNotOwner;
     private DestinationRequest destinationRequest;
     private DestinationRequest invalidDestinationRequest;
     private DestinationResponse destinationResponse;
@@ -63,7 +64,9 @@ class DestinationControllerTest {
     @BeforeEach
     void setUp() {
         user = new User(1L, "Kate", "kate.dev@gmail.com", "encoded-password", Role.ADMIN, new ArrayList<>());
+        User testUser = new User(1L, "Kate", "kate.dev@gmail.com", "encoded-password", Role.ADMIN, new ArrayList<>());
         testUserDetails = new CustomUserDetail(user);
+        userDetailsNotOwner = new CustomUserDetail(testUser);
         invalidDestinationRequest = new DestinationRequest("Sp", null, "Nice", "image.jpg");
         userResponseShort = new UserResponseShort("Kate");
         destinationRequest = new DestinationRequest("Spain", "Valencia", "Nice", "https://image.jpg");
@@ -93,6 +96,26 @@ class DestinationControllerTest {
 
     private ResultActions performPostRequestWithoutUser(String url, Object body) throws Exception {
         return mockMvc.perform(post(url)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(body)));
+    }
+
+    private ResultActions performPutRequest(String url, Object body, UserDetails user) throws Exception {
+        return mockMvc.perform(put(url)
+                .with(user(user))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(body)));
+    }
+
+    private ResultActions performPutRequestNotOwner(String url, Object body, UserDetails user) throws Exception {
+        return mockMvc.perform(put(url)
+                .with(user(user))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(body)));
+    }
+
+    private ResultActions performPutRequestWithoutUser(String url, Object body) throws Exception {
+        return mockMvc.perform(put(url)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(body)));
     }
@@ -213,10 +236,10 @@ class DestinationControllerTest {
         void addDestination_withoutAuthentication_returns401() throws Exception {
             performPostRequestWithoutUser("/destinations", invalidDestinationRequest)
                     .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.error").value("UNAUTHORIZED"))
-                .andExpect(jsonPath("$.path").value("/destinations"))
-                .andExpect(jsonPath("$.status").value(401))
-                .andExpect(jsonPath("$.message").value("Unauthorized: Full authentication is required to access this resource"));
+                    .andExpect(jsonPath("$.error").value("UNAUTHORIZED"))
+                    .andExpect(jsonPath("$.path").value("/destinations"))
+                    .andExpect(jsonPath("$.status").value(401))
+                    .andExpect(jsonPath("$.message").value("Unauthorized: Full authentication is required to access this resource"));
         }
     }
 
@@ -225,15 +248,11 @@ class DestinationControllerTest {
     class UpdateDestinationTests {
 
         @Test
-        void updateDestination_returnsUpdated() throws Exception {
+        void updateDestination_whenRequestIsValid_returnsUpdatedDestination() throws Exception {
             Long id = 1L;
-            given(destinationService.updateDestination(eq(id), eq(destinationRequest), any(User.class)))
-                    .willReturn(destinationResponse);
+            given(destinationService.updateDestination(eq(id), eq(destinationRequest), any(User.class))).willReturn(destinationResponse);
 
-            mockMvc.perform(put("/destinations/user/{id}", id)
-                            .with(user(testUserDetails))
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(asJsonString(destinationRequest)))
+            performPutRequest("/destinations/" + id, destinationRequest, testUserDetails)
                     .andExpect(status().isOk())
                     .andExpect(content().json(asJsonString(destinationResponse)));
 
@@ -241,19 +260,43 @@ class DestinationControllerTest {
         }
 
         @Test
-        void updateDestination_whenUnauthorized_returns403() throws Exception {
+        void updateDestination_whenRequestIsInvalid_returns400() throws Exception {
+            performPutRequest("/destinations/20", invalidDestinationRequest, testUserDetails)
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.error").value("VALIDATION_ERROR"))
+                    .andExpect(jsonPath("$.path").value("/destinations/20"))
+                    .andExpect(jsonPath("$.status").value(400))
+                    .andExpect(jsonPath("$.message.country").value("Country must be more than 3 characters and less than 50 characters"))
+                    .andExpect(jsonPath("$.message.city").value("City is required"))
+                    .andExpect(jsonPath("$.message.imageUrl").value("Invalid content type"));
+        }
+
+        @Test
+        void updateDestination_whenUnauthorized_returns401() throws Exception {
             Long id = 1L;
-            given(destinationService.updateDestination(eq(id), eq(destinationRequest), eq(user)))
-                    .willThrow(new AccessDeniedException("Forbidden")); // Simulating not allowed
+            given(destinationService.updateDestination(eq(id), eq(destinationRequest), eq(user))).willThrow(new AccessDeniedException("Forbidden"));
 
-            mockMvc.perform(put("/destinations/user/{id}", id)
-                            .with(user(testUserDetails))
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(asJsonString(destinationRequest)))
-                    .andExpect(status().isForbidden());
-            // and expect content
+            performPutRequestWithoutUser("/destinations/" + id, destinationRequest)
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.error").value("UNAUTHORIZED"))
+                    .andExpect(jsonPath("$.path").value("/destinations/1"))
+                    .andExpect(jsonPath("$.status").value(401))
+                    .andExpect(jsonPath("$.message").value("Unauthorized: Full authentication is required to access this resource"));
+        }
 
-            verify(destinationService, times(1)).updateDestination(eq(id), eq(destinationRequest), eq(user));
+        @Test
+        void updateDestination_whenUserNotOwner_returns403() throws Exception {
+            Long id = 1L;
+            given(destinationService.updateDestination(eq(id), eq(destinationRequest), eq(user))).willThrow(new AccessDeniedException("You are not authorized to modify or delete this destination."));
+
+            performPutRequestNotOwner("/destinations/" + id, destinationRequest, userDetailsNotOwner)
+                    .andExpect(status().isForbidden())
+                    .andExpect(jsonPath("$.error").value("FORBIDDEN"))
+                    .andExpect(jsonPath("$.path").value("/destinations/1"))
+                    .andExpect(jsonPath("$.status").value(403))
+                    .andExpect(jsonPath("$.message").value("Forbidden: You are not authorized to modify or delete this destination."));
+
+            verify(destinationService, times(1)).updateDestination(eq(id), eq(destinationRequest), any(User.class));
         }
     }
 
