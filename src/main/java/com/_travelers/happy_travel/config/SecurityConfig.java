@@ -57,15 +57,10 @@ public class SecurityConfig {
     @Bean
     public AccessDeniedHandler accessDeniedHandler() {
         return (request, response, exception) -> {
-
-            exception.printStackTrace();
-
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             response.setContentType("application/json");
-
             ErrorResponse error = ErrorResponse.fromSecurityException(
                     HttpStatus.FORBIDDEN, exception, request);
-
             objectMapper().writeValue(response.getWriter(), error);
         };
     }
@@ -73,15 +68,11 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationEntryPoint authenticationEntryPoint() {
-        return (request, response, ex) -> {
+        return (request, response, exception) -> {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
-
             ErrorResponse error = new ErrorResponse(
-                    HttpStatus.UNAUTHORIZED,
-                    "Unauthorized: " + ex.getMessage(),
-                    request
-            );
+                    HttpStatus.UNAUTHORIZED, "Unauthorized: " + exception.getMessage(), request);
             objectMapper().writeValue(response.getWriter(), error);
         };
     }
@@ -89,7 +80,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("*"));                      // Change to your domains in prod
+        config.setAllowedOrigins(List.of("*"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
