@@ -90,17 +90,6 @@ public class SecurityConfig {
         return source;
     }
 
-
-
-    @Bean
-    public InMemoryUserDetailsManager userDetailsService(BCryptPasswordEncoder passwordEncoder) {
-        UserDetails user = User.withUsername("spring")
-                .password(passwordEncoder.encode("secret"))
-                .roles("USER")
-                .build();
-        return new InMemoryUserDetailsManager(user);
-    }
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthFilter jwtAuthFilter) throws Exception {
         http

@@ -6,6 +6,7 @@ import com._travelers.happy_travel.users.dto.UserRegisterRequest;
 import com._travelers.happy_travel.users.dto.UserResponse;
 import com._travelers.happy_travel.exceptions.EntityNotFoundException;
 import com._travelers.happy_travel.exceptions.ErrorResponse;
+import com._travelers.happy_travel.security.CustomUserDetail;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.AfterEach;
