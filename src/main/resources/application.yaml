@@ -1,9 +1,14 @@
+admin:
+  email: ${ADMIN_EMAIL}
+  username: ${ADMIN_USERNAME}
+  password: ${ADMIN_PASSWORD}
+
 spring:
-#  security:
-#    user:
-#      name: testuser
-#      password: testpass
-#      roles: ROLE_USER
+  security:
+    user:
+      name: testuser
+      password: testpass
+      roles: ROLE_USER
 
   output:
     ansi:
@@ -25,7 +30,7 @@ spring:
   jpa:
     defer-datasource-initialization: true
     hibernate:
-      ddl-auto: create-drop #update
+      ddl-auto: create-drop
     show-sql: true
     properties:
       hibernate:
@@ -47,10 +52,16 @@ server:
   # Logging Configuration
 logging:
   level:
+    org.springframework.web: DEBUG
     org.springframework.security: TRACE
-    org.hibernate:
-        SQL: DEBUG
-        springframework: DEBUG
-#      com:
-#        zaxxer:
-#          hikari: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.springframework: DEBUG
+#      com.zaxxer.hikari: DEBUG
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+#    tagsSorter: alpha
