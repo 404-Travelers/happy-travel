@@ -6,13 +6,11 @@ import com._travelers.happy_travel.destinations.DestinationRepository;
 import com._travelers.happy_travel.destinations.DestinationService;
 import com._travelers.happy_travel.destinations.dto.DestinationRequest;
 import com._travelers.happy_travel.destinations.dto.DestinationResponseShort;
-import com._travelers.happy_travel.exceptions.EntityAlreadyExistsException;
 import com._travelers.happy_travel.exceptions.EntityNotFoundException;
 import com._travelers.happy_travel.destinations.dto.DestinationResponse;
 import com._travelers.happy_travel.users.Role;
 import com._travelers.happy_travel.users.User;
 import com._travelers.happy_travel.users.UserService;
-import com._travelers.happy_travel.users.dto.UserResponse;
 import com._travelers.happy_travel.users.dto.UserResponseShort;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,12 +22,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.access.AccessDeniedException;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 

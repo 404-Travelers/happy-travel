@@ -3,7 +3,6 @@ package com._travelers.happy_travel.destinations.dto;
 import com._travelers.happy_travel.destinations.Destination;
 import com._travelers.happy_travel.users.User;
 import com._travelers.happy_travel.users.dto.UserMapper;
-import com._travelers.happy_travel.users.dto.UserResponse;
 import com._travelers.happy_travel.users.dto.UserResponseShort;
 
 public class DestinationMapper {

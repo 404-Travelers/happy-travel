@@ -1,6 +1,5 @@
 package com._travelers.happy_travel.destinations;
 
-
 import com._travelers.happy_travel.destinations.dto.DestinationRequest;
 import com._travelers.happy_travel.destinations.dto.DestinationResponse;
 import com._travelers.happy_travel.destinations.dto.DestinationResponseShort;
