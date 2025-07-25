@@ -152,7 +152,7 @@ class DestinationControllerTest {
             Long id = 1L;
             given(destinationService.getDestinationById(id)).willReturn(destinationResponse);
 
-            mockMvc.perform(get("/destinations/id/{id}", id))
+            mockMvc.perform(get("/destinations/{id}", id))
                     .andExpect(status().isOk())
                     .andExpect(content().json(asJsonString(destinationResponse)));
 
@@ -165,10 +165,10 @@ class DestinationControllerTest {
             String expectedMessage = "Destination with id " + id + " not found";
             given(destinationService.getDestinationById(id)).willThrow(new EntityNotFoundException("Destination", "id", String.valueOf(id)));
 
-            mockMvc.perform(get("/destinations/id/{id}", id))
+            mockMvc.perform(get("/destinations/{id}", id))
                     .andExpect(status().isNotFound())
                     .andExpect(jsonPath("$.error").value("NOT_FOUND"))
-                    .andExpect(jsonPath("$.path").value("/destinations/id/" + id))
+                    .andExpect(jsonPath("$.path").value("/destinations/" + id))
                     .andExpect(jsonPath("$.status").value(HttpStatus.NOT_FOUND.value()))
                     .andExpect(jsonPath("$.message").value(expectedMessage));
 
