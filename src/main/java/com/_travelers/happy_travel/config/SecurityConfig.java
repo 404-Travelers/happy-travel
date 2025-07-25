@@ -51,18 +51,6 @@ public class SecurityConfig {
         return new JwtAuthFilter(jwtService, userService);
     }
 
-//    @Bean
-//    public AccessDeniedHandler accessDeniedHandler() {
-//        return (request, response, exception) -> {
-//            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-//            response.setContentType("application/json");
-//            ErrorResponse error = new ErrorResponse(
-//                    HttpStatus.FORBIDDEN, "Forbidden: " + exception.getMessage(), request);
-//            objectMapper().writeValue(response.getWriter(), error);
-//        };
-//    }
-
-
     @Bean
     public AuthenticationEntryPoint authenticationEntryPoint() {
         return (request, response, exception) -> {
