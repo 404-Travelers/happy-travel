@@ -27,16 +27,17 @@ public class JwtService {
     public String generateToken(CustomUserDetail userDetail) {
             return buildToken(userDetail, JWT_EXPIRATION);
         }
-        private String buildToken(CustomUserDetail userDetail, long jwtExpiration) {
-            return Jwts
-                    .builder()
-                    .claim(ROLE, userDetail.getAuthorities().toString())
-                    .subject(userDetail.getUsername())
-                    .issuedAt(new Date(System.currentTimeMillis()))
-                    .expiration(new Date(System.currentTimeMillis() + jwtExpiration))
-                    .signWith(getSignKey())
-                    .compact();
-        }
+
+    private String buildToken(CustomUserDetail userDetail, long jwtExpiration) {
+        return Jwts
+                .builder()
+                .claim(ROLE, userDetail.getAuthorities().toString())
+                .subject(userDetail.getUsername())
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + jwtExpiration))
+                .signWith(getSignKey())
+                .compact();
+    }
 
     public String extractUsername (String token) {
             return extractAllClaims(token).getSubject();
