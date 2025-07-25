@@ -39,7 +39,7 @@ public class UserServiceTest {
     @BeforeEach
     void setUp() {
         user  = new User(1L, "Kate", "kate.dev@gmail.com", "encoded-password", Role.USER, new ArrayList<Destination>());;
-        userResponse = new UserResponse("Kate", "kate.dev@gmail.com", "ROLE_USER");
+        userResponse = new UserResponse("Kate", "kate.dev@gmail.com", "USER");
         userRegisterRequest = new UserRegisterRequest("Kate", "kate.dev@gmail.com", "mypass1234*");
     }
     
@@ -73,7 +73,7 @@ public class UserServiceTest {
         }
 
         @Test
-        void getUserById_whenUserExists_returnsUserResponse() {
+        void getUserByIdAdmin_whenUserExists_returnsUserResponse() {
             Long id = 1L;
             UserResponse expectedResult = userResponse;
             when(userRepository.findById(eq(id))).thenReturn(Optional.of(user));
@@ -84,7 +84,7 @@ public class UserServiceTest {
         }
 
         @Test
-        void getUserById_whenUserDoesNotExist_returnsException() {
+        void getUserByIdAdmin_whenUserDoesNotExist_returnsException() {
             Long id = 1L;
             Exception expectedException = new EntityNotFoundException(User.class.getSimpleName(), "id", id.toString());
             when(userRepository.findById(eq(id))).thenReturn(Optional.empty());
@@ -93,27 +93,49 @@ public class UserServiceTest {
             assertEquals(expectedException.getMessage(), resultException.getMessage());
             verify(userRepository, times(1)).findById(id);
         }
-//
-//    @Test
-//    void getUserByUsername_whenUserExists_returnsUserResponse() {
-//        String username ="Kate";
-//        when(userRepository.findByUsername(eq(username))).thenReturn(Optional.of(user));
-//        UserResponse result = userService.getUserByUsername(username);
-//
-//        assertEquals(userResponse, result);
-//        verify(userRepository, times(1)).findByUsername(username);
-//    }
-//
-//    @Test
-//    void getUserByUsername_whenUserDoesNotExist_returnsException() {
-//        String username = "Mike";
-//        String expectedMessage = "User with username " + username + " not found";
-//        when(userRepository.findByUsername(anyString())).thenReturn(Optional.empty());
-//
-//        Exception exception = assertThrows(EntityNotFoundException.class, () -> userService.getUserByUsername(username));
-//        assertEquals(expectedMessage, exception.getMessage());
-//        verify(userRepository, times(1)).findByUsername(username);
-//    }
+
+        @Test
+        void getOwnUser_whenUserExists_returnsUserResponse() {
+            Long id = 1L;
+            UserResponse expectedResult = userResponse;
+            when(userRepository.findById(eq(id))).thenReturn(Optional.of(user));
+            UserResponse result = userService.getOwnUser(id);
+
+            assertEquals(expectedResult, result);
+            verify(userRepository, times(1)).findById(id);
+        }
+
+        @Test
+        void getOwnUser_whenUserDoesNotExist_returnsException() {
+            Long id = 1L;
+            Exception expectedException = new EntityNotFoundException(User.class.getSimpleName(), "id", id.toString());
+            when(userRepository.findById(eq(id))).thenReturn(Optional.empty());
+
+            Exception resultException = assertThrows(EntityNotFoundException.class, () -> userService.getOwnUser(id));
+            assertEquals(expectedException.getMessage(), resultException.getMessage());
+            verify(userRepository, times(1)).findById(id);
+        }
+
+        @Test
+        void getUserByUsername_whenUserExists_returnsUserResponse() {
+            String username ="Kate";
+            when(userRepository.findByUsername(eq(username))).thenReturn(Optional.of(user));
+            User result = userService.getByUsername(username);
+
+            assertEquals(user, result);
+            verify(userRepository, times(1)).findByUsername(username);
+        }
+
+        @Test
+        void getUserByUsername_whenUserDoesNotExist_returnsException() {
+            String username = "Mike";
+            String expectedMessage = "User with username " + username + " not found";
+            when(userRepository.findByUsername(anyString())).thenReturn(Optional.empty());
+
+            Exception exception = assertThrows(EntityNotFoundException.class, () -> userService.getByUsername(username));
+            assertEquals(expectedMessage, exception.getMessage());
+            verify(userRepository, times(1)).findByUsername(username);
+        }
     }
 
     @Nested
