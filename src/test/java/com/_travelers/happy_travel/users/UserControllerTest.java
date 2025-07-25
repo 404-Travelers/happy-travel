@@ -101,7 +101,7 @@ public class UserControllerTest{
     class GetUsersTests {
 
         @Test
-        void geMyUser_whenRequestIsValid_returnsUser() throws Exception {
+        void geMyUser_withAuthentication_returnsUser() throws Exception {
             Long id = user.getId();
             given(userService.getOwnUser(eq(id))).willReturn(userResponse);
 
@@ -123,7 +123,7 @@ public class UserControllerTest{
         }
 
         @Test
-        void geMyDestinations_whenRequestIsValid_returnsDestinationsList() throws Exception {
+        void geMyDestinations_withAuthentication_returnsDestinationsList() throws Exception {
             given(destinationService.getDestinationsByUserUsername(eq(testUserDetails.getUser().getUsername()))).willReturn(List.of(destinationResponse));
 
             mockMvc.perform(get("/users/me/destinations")
@@ -151,7 +151,7 @@ public class UserControllerTest{
     class UpdateUserTests {
 
         @Test
-        void updateUser_whenRequestIsValid_returnsUserResponseEntity() throws Exception {
+        void updateUser_withAuthentication_returnsUser() throws Exception {
             Long id = 1L;
             given(userService.updateOwnUser(eq(id), eq(userRegisterRequest))).willReturn(userResponse);
 
@@ -166,15 +166,7 @@ public class UserControllerTest{
         }
 
         @Test
-        void updateUser_whenInvalidUsername_returnsBadRequest() throws Exception {
-            Map<String, String> errors = new HashMap<>();
-            errors.put("username", "Username must be between 3 and 50 characters");
-            ErrorResponse errorResponse = ErrorResponse.builder()
-                    .error("VALIDATION_ERROR")
-                    .path("/users/1")
-                    .timestamp(LocalDateTime.now())
-                    .message(errors)
-                    .status(HttpStatus.BAD_REQUEST.value()).build();
+        void updateUser_whenInvalidUsernameAndPassword_returns400() throws Exception {
 
             mockMvc.perform(put("/users/me", 1)
                             .with(user(testUserDetails))
@@ -209,31 +201,27 @@ public class UserControllerTest{
 
 
         @Test
-        void deleteUser_whenRequestIsValid_returnsMessageEntity() throws Exception {
+        void deleteUser_withAuthentication_returnsMessage() throws Exception {
             Long id = 1L;
             String message = "User deleted successfully";
             given(userService.deleteOwnUser(eq(id))).willReturn(message);
 
-            mockMvc.perform(delete("/users/{id}", id))
-                    .andDo(print())
-                    .andExpect(status().isOk())
-                    .andExpect(content().string("User deleted successfully"));
+            mockMvc.perform(delete("/users/me")
+                            .with(user(testUserDetails)))
+                    .andExpect(content().string(message));
 
             verify(userService, times(1)).deleteOwnUser(eq(id));
         }
 
         @Test
-        void deleteUser_whenRequestIsInvalid_returnsException() throws Exception {
-            Long invalidId = -7L;
-            String message = "User id must be a positive number";
-//        String expectedJson = new ObjectMapper().writeValueAsString(
-//               message
-//        );
-
-            mockMvc.perform(delete("/users/{id}", invalidId))
-                    .andDo(print())
-                    .andExpect(status().isBadRequest())
-                    .andExpect(content().string(message));
+        void deleteUser_withoutAuthentication_returns401() throws Exception {
+            mockMvc.perform(delete("/users/me"))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.length()").value(5))
+                    .andExpect(jsonPath("$.error").value("UNAUTHORIZED"))
+                    .andExpect(jsonPath("$.path").value("/users/me"))
+                    .andExpect(jsonPath("$.status").value(401))
+                    .andExpect(jsonPath("$.message").value("Unauthorized: Full authentication is required to access this resource"));
         }
     }
 }
