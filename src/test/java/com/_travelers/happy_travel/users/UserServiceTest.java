@@ -231,7 +231,7 @@ public class UserServiceTest {
         void updateUser_whenUsernameChangedAndNotExists_returnsUpdatedUser() {
             Long id = 1L;
             userRegisterRequest = new UserRegisterRequest("Olivia", "kate.dev@gmail.com", "newpass456*");
-            userResponse = new UserResponse("Olivia", "kate.dev@gmail.com", "ROLE_USER");
+            userResponse = new UserResponse("Olivia", "kate.dev@gmail.com", "USER");
             when(userRepository.findById(id)).thenReturn(Optional.of(user));
             when(userRepository.findByUsername("Olivia")).thenReturn(Optional.empty());
             when(passwordEncoder.encode(any())).thenReturn("encoded-password");
