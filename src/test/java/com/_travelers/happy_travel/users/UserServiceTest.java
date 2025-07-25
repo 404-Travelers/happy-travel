@@ -251,7 +251,33 @@ public class UserServiceTest {
     class DeleteUserTests {
 
         @Test
-        void deleteUser_whenUserExists_returnsMessage() {
+        void deleteUserAdmin_whenUserExists_returnsMessage() {
+            Long id = 1L;
+            User user = new User();
+            String expectedMessage = "User with id " + id + " deleted successfully";
+            when(userRepository.existsById(eq(id))).thenReturn(true);
+            doNothing().when(userRepository).deleteById(eq(id));
+            String result = userService.deleteUserByIdAdmin(id);
+
+            assertEquals(expectedMessage, result);
+            verify(userRepository, times(1)).existsById(id);
+            verify(userRepository, times(1)).deleteById(id);
+        }
+
+        @Test
+        void deleteUserAdmin_whenUserDoesNotExist_returnsException() {
+            Long id = 1L;
+            String expectedMessage = "User with id " + id + " not found";
+            when(userRepository.existsById(eq(id))).thenReturn(false);
+
+            Exception exception = assertThrows(EntityNotFoundException.class, () -> userService.deleteUserByIdAdmin(id));
+
+            assertEquals(expectedMessage, exception.getMessage());
+            verify(userRepository, times(1)).existsById(id);
+        }
+
+        @Test
+        void deleteOwnUser_whenUserExists_returnsMessage() {
             Long id = 1L;
             User user = new User();
             String expectedMessage = "User with id " + id + " deleted successfully";
@@ -265,7 +291,7 @@ public class UserServiceTest {
         }
 
         @Test
-        void deleteUser_whenUserDoesNotExist_returnsException() {
+        void deleteOwnUser_whenUserDoesNotExist_returnsException() {
             Long id = 1L;
             String expectedMessage = "User with id " + id + " not found";
             when(userRepository.existsById(eq(id))).thenReturn(false);
