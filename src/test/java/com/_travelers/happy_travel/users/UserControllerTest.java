@@ -1,5 +1,8 @@
 package com._travelers.happy_travel.users;
 
+import com._travelers.happy_travel.destinations.Destination;
+import com._travelers.happy_travel.destinations.DestinationService;
+import com._travelers.happy_travel.destinations.dto.DestinationResponse;
 import com._travelers.happy_travel.users.User;
 import com._travelers.happy_travel.users.UserService;
 import com._travelers.happy_travel.users.dto.UserRegisterRequest;
@@ -7,6 +10,7 @@ import com._travelers.happy_travel.users.dto.UserResponse;
 import com._travelers.happy_travel.exceptions.EntityNotFoundException;
 import com._travelers.happy_travel.exceptions.ErrorResponse;
 import com._travelers.happy_travel.security.CustomUserDetail;
+import com._travelers.happy_travel.users.dto.UserResponseShort;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.*;
@@ -52,17 +56,22 @@ public class UserControllerTest{
     @MockitoBean
     private UserService userService;
 
+    @MockitoBean
+    private DestinationService destinationService;
+
     @Autowired
     private ObjectMapper objectMapper;
 
     private UserRegisterRequest userRegisterRequest;
     private UserRegisterRequest invalidUserRegisterRequest;
     private UserResponse userResponse;
-    private UserDetails testUserDetails;
+    private CustomUserDetail testUserDetails;
     private User user;
+    private DestinationResponse destinationResponse;
 
     @BeforeEach
     void setUp() {
+        destinationResponse = new DestinationResponse("Spain", "Valencia","Nice", "image.jpg", new UserResponseShort("Kate"));
         user = new User(1L, "Kate", "kate.dev@gmail.com", "encoded-password", Role.ADMIN, new ArrayList<>());
         testUserDetails = new CustomUserDetail(user);
         userRegisterRequest = new UserRegisterRequest("Katie", "kate.dev@gmail.com", "mypass1234*");
@@ -102,6 +111,30 @@ public class UserControllerTest{
                     .andExpect(status().isUnauthorized())
                     .andExpect(jsonPath("$.error").value("UNAUTHORIZED"))
                     .andExpect(jsonPath("$.path").value("/users/me"))
+                    .andExpect(jsonPath("$.status").value(401))
+                    .andExpect(jsonPath("$.message").value("Unauthorized: Full authentication is required to access this resource"));
+        }
+
+        @Test
+        void geMyDestinations_whenRequestIsValid_returnsDestinationsList() throws Exception {
+            Long id = user.getId();
+            String expectedJson = objectMapper.writeValueAsString(List.of(destinationResponse));
+            given(destinationService.getDestinationsByUserUsername(eq(testUserDetails.getUser().getUsername()))).willReturn(List.of(destinationResponse));
+
+            mockMvc.perform(get("/users/me/destinations")
+                            .with(user(testUserDetails)))
+                    .andExpect(status().isOk())
+                    .andExpect(content().json(expectedJson));
+
+
+            verify(destinationService, times (1)).getDestinationsByUserUsername(eq(testUserDetails.getUser().getUsername()));
+        }
+        @Test
+        void getMyDestinations_withoutAuthentication_returns401() throws Exception {
+            mockMvc.perform(get("/users/me/destinations"))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.error").value("UNAUTHORIZED"))
+                    .andExpect(jsonPath("$.path").value("/users/me/destinations"))
                     .andExpect(jsonPath("$.status").value(401))
                     .andExpect(jsonPath("$.message").value("Unauthorized: Full authentication is required to access this resource"));
         }
