@@ -32,7 +32,7 @@ public class DestinationController {
         return ResponseEntity.ok(list);
     }
 
-    @GetMapping("/id/{destinationId}")
+    @GetMapping("/{destinationId}")
     public ResponseEntity<DestinationResponse> getDestinationById(@PathVariable Long destinationId) {
         DestinationResponse destination = destinationService.getDestinationById(destinationId);
         return ResponseEntity.ok(destination);
