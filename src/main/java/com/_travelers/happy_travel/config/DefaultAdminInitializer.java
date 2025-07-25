@@ -32,7 +32,7 @@ public class DefaultAdminInitializer {
                 admin.setUsername(adminUsername);
                 admin.setEmail(adminEmail);
                 admin.setPassword(passwordEncoder.encode(adminPassword));
-                admin.setRole(Role.ROLE_ADMIN);
+                admin.setRole(Role.ADMIN);
                 admin.setDestinations(Collections.emptyList());
 
                 userRepository.save(admin);
