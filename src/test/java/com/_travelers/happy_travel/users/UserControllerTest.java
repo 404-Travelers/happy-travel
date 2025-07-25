@@ -74,9 +74,9 @@ public class UserControllerTest{
         destinationResponse = new DestinationResponse("Spain", "Valencia","Nice", "image.jpg", new UserResponseShort("Kate"));
         user = new User(1L, "Kate", "kate.dev@gmail.com", "encoded-password", Role.ADMIN, new ArrayList<>());
         testUserDetails = new CustomUserDetail(user);
-        userRegisterRequest = new UserRegisterRequest("Katie", "kate.dev@gmail.com", "mypass1234*");
+        userRegisterRequest = new UserRegisterRequest("Katie", "kate.dev@gmail.com", "myPpas%s1234*");
         userResponse = new UserResponse("Katie", "kate.dev@gmail.com", "ROLE_USER");
-        invalidUserRegisterRequest = new UserRegisterRequest("Kate", "kate.dev@gmail.com", "mypass1234*");
+        invalidUserRegisterRequest = new UserRegisterRequest("Ka", "kate.dev@gmail.com", "mypass1234*");
         mockMvc = MockMvcBuilders
           .webAppContextSetup(context)
           .apply(springSecurity())
@@ -88,6 +88,14 @@ public class UserControllerTest{
         verifyNoMoreInteractions(userService);
     }
 
+    private String asJsonString(Object object) {
+        try {
+            return objectMapper.writeValueAsString(object);
+        } catch (Exception exception) {
+            throw new RuntimeException("Failed to convert object to JSON string for testing", exception);
+        }
+    }
+
     @Nested
     @DisplayName("GET /users")
     class GetUsersTests {
@@ -95,13 +103,12 @@ public class UserControllerTest{
         @Test
         void geMyUser_whenRequestIsValid_returnsUser() throws Exception {
             Long id = user.getId();
-            String expectedJson = objectMapper.writeValueAsString(userResponse);
             given(userService.getOwnUser(eq(id))).willReturn(userResponse);
 
             mockMvc.perform(get("/users/me")
                             .with(user(testUserDetails)))
                     .andExpect(status().isOk())
-                    .andExpect(content().json(expectedJson));
+                    .andExpect(content().json(asJsonString(userResponse)));
 
             verify(userService, times(1)).getOwnUser(eq(id));
         }
@@ -117,18 +124,17 @@ public class UserControllerTest{
 
         @Test
         void geMyDestinations_whenRequestIsValid_returnsDestinationsList() throws Exception {
-            Long id = user.getId();
-            String expectedJson = objectMapper.writeValueAsString(List.of(destinationResponse));
             given(destinationService.getDestinationsByUserUsername(eq(testUserDetails.getUser().getUsername()))).willReturn(List.of(destinationResponse));
 
             mockMvc.perform(get("/users/me/destinations")
                             .with(user(testUserDetails)))
                     .andExpect(status().isOk())
-                    .andExpect(content().json(expectedJson));
+                    .andExpect(content().json(asJsonString(List.of(destinationResponse))));
 
 
             verify(destinationService, times (1)).getDestinationsByUserUsername(eq(testUserDetails.getUser().getUsername()));
         }
+
         @Test
         void getMyDestinations_withoutAuthentication_returns401() throws Exception {
             mockMvc.perform(get("/users/me/destinations"))
@@ -142,20 +148,19 @@ public class UserControllerTest{
 
     @Nested
     @DisplayName("PUT /users")
-    class UpdateUsersTests {
+    class UpdateUserTests {
 
         @Test
         void updateUser_whenRequestIsValid_returnsUserResponseEntity() throws Exception {
             Long id = 1L;
-            String jsonRequest = objectMapper.writeValueAsString(userRegisterRequest);
-            String expectedJson = objectMapper.writeValueAsString(userResponse);
             given(userService.updateOwnUser(eq(id), eq(userRegisterRequest))).willReturn(userResponse);
 
-            mockMvc.perform(put("/users/{id}", id)
+            mockMvc.perform(put("/users/me")
+                            .with(user(testUserDetails))
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(jsonRequest))
+                            .content(asJsonString(userRegisterRequest)))
                     .andExpect(status().isOk())
-                    .andExpect(content().json(expectedJson));
+                    .andExpect(content().json(asJsonString(userResponse)));
 
             verify(userService, times(1)).updateOwnUser(eq(id), eq(userRegisterRequest));
         }
@@ -170,17 +175,31 @@ public class UserControllerTest{
                     .timestamp(LocalDateTime.now())
                     .message(errors)
                     .status(HttpStatus.BAD_REQUEST.value()).build();
-            String jsonRequest = objectMapper.writeValueAsString(invalidUserRegisterRequest);
-            String jsonResponse = objectMapper.writeValueAsString(errorResponse);
 
-            mockMvc.perform(put("/users/{id}", 1)
+            mockMvc.perform(put("/users/me", 1)
+                            .with(user(testUserDetails))
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(jsonRequest))
+                            .content(asJsonString(invalidUserRegisterRequest)))
                     .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.length()").value(5))
                     .andExpect(jsonPath("$.error").value("VALIDATION_ERROR"))
-                    .andExpect(jsonPath("$.path").value("/users/1"))
+                    .andExpect(jsonPath("$.path").value("/users/me"))
                     .andExpect(jsonPath("$.status").value(400))
-                    .andExpect(jsonPath("$.message.username").value("Username must be between 3 and 50 characters"));
+                    .andExpect(jsonPath("$.message.length()").value(2))
+                    .andExpect(jsonPath("$.message.username").value("Username must be between 3 and 50 characters"))
+                    .andExpect(jsonPath("$.message.password").value("Password must contain a minimum of 8 characters and a max of 50 characters, including a number, one uppercase letter, one lowercase letter and one special character"));
+        }
+
+        @Test
+        void updateUser_withoutAuthentication_returns401() throws Exception {
+            mockMvc.perform(put("/users/me")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(userRegisterRequest)))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.error").value("UNAUTHORIZED"))
+                    .andExpect(jsonPath("$.path").value("/users/me"))
+                    .andExpect(jsonPath("$.status").value(401))
+                    .andExpect(jsonPath("$.message").value("Unauthorized: Full authentication is required to access this resource"));
         }
     }
 
