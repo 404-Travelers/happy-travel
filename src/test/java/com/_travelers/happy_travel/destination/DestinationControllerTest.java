@@ -71,9 +71,9 @@ class DestinationControllerTest {
         userDetailsNotOwner = new CustomUserDetail(testUser);
         invalidDestinationRequest = new DestinationRequest("Sp", null, "Nice", "image.jpg");
         userResponseShort = new UserResponseShort("Kate");
-        destinationRequest = new DestinationRequest("Spain", "Valencia", "Nice", "https://image.jpg");
-        destinationResponse = new DestinationResponse("Spain", "Valencia", "Nice", "https://image.jpg", userResponseShort);
-        destinationResponseShort = new DestinationResponseShort("Spain", "Valencia", "https://image.jpg", userResponseShort);
+        destinationRequest = new DestinationRequest("Italy", "Rome", "Nice", "https://image.jpg");
+        destinationResponse = new DestinationResponse(1L, "Italy", "Rome", "Nice", "https://image.jpg", userResponseShort);
+        destinationResponseShort = new DestinationResponseShort(1L, "Italy", "Rome", "https://image.jpg", userResponseShort);
     }
 
     @AfterEach
