@@ -14,6 +14,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -24,6 +25,13 @@ public class DestinationService {
 
     public List<DestinationResponseShort> getAllDestinations(){
         List<Destination> destinations = destinationRepository.findAll();
+        return listToDtoShort(destinations);
+    }
+
+    public List<DestinationResponseShort> getAllDestinationsUser(String username){
+        List<Destination> destinations = destinationRepository.findAll();
+
+        destinations.sort(Comparator.comparing(destination -> destination.getUser() != null && username.equals(destination.getUser().getUsername()) ? 0 : 1));
         return listToDtoShort(destinations);
     }
 
