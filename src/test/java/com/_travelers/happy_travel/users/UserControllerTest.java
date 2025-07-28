@@ -53,7 +53,7 @@ public class UserControllerTest{
 
     @BeforeEach
     void setUp() {
-        destinationResponse = new DestinationResponse("Spain", "Valencia","Nice", "image.jpg", new UserResponseShort("Kate"));
+        destinationResponse = new DestinationResponse(1L, "Italy", "Rome","Nice", "image.jpg", new UserResponseShort("Kate"));
         user = new User(1L, "Kate", "kate.dev@gmail.com", "encoded-password", Role.ADMIN, new ArrayList<>());
         testUserDetails = new CustomUserDetail(user);
         userRegisterRequest = new UserRegisterRequest("Katie", "kate.dev@gmail.com", "myPpas%s1234*");

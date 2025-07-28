@@ -49,10 +49,10 @@ public class DestinationServiceTest {
     @BeforeEach
     void setUp() {
         user = new User(1L, "Kate", "kate.dev@gmail.com", "encoded-password", Role.USER, new ArrayList<Destination>());
-        destination = new Destination(1L, "Spain", "Valencia", "Nice", "image.jpg", user);
-        destinationRequest = new DestinationRequest("Spain", "Valencia","Nice", "image.jpg");
-        destinationResponse = new DestinationResponse("Spain", "Valencia","Nice", "image.jpg", new UserResponseShort("Kate"));
-        destinationResponseShort = new DestinationResponseShort("Spain", "Valencia", "image.jpg", new UserResponseShort("Kate"));
+        destination = new Destination(1L, "Italy", "Rome", "Nice", "image.jpg", user);
+        destinationRequest = new DestinationRequest("Italy", "Rome","Nice", "image.jpg");
+        destinationResponse = new DestinationResponse(1L, "Italy", "Rome","Nice", "image.jpg", new UserResponseShort("Kate"));
+        destinationResponseShort = new DestinationResponseShort(1L, "Italy", "Rome", "image.jpg", new UserResponseShort("Kate"));
     }
 
     @AfterEach
