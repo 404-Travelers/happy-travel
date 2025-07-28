@@ -45,7 +45,7 @@ public class AdminController {
 
     @Operation(
             summary = "Delete user by ID",
-            description = "Deletes user with given ID. Returns 204 if successful."
+            description = "Deletes user with given ID. Returns a message if successful."
     )
     @DeleteMapping("/users/{id}")
     public ResponseEntity<String> deleteUserById(
