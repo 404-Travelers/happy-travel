@@ -17,10 +17,10 @@ public class DestinationMapper {
     }
     public static DestinationResponse toDto(Destination destination){
         UserResponseShort userDto = UserMapper.toDtoShort(destination.getUser());
-        return new DestinationResponse(destination.getCountry(), destination.getCity(), destination.getDescription(), destination.getImageUrl(), userDto);
+        return new DestinationResponse(destination.getId(), destination.getCountry(), destination.getCity(), destination.getDescription(), destination.getImageUrl(), userDto);
     }
     public static DestinationResponseShort toDtoShort (Destination destination){
         UserResponseShort userDto = UserMapper.toDtoShort(destination.getUser());
-        return new DestinationResponseShort(destination.getCountry(),destination.getCity(), destination.getImageUrl(), userDto);
+        return new DestinationResponseShort(destination.getId(), destination.getCountry(), destination.getCity(), destination.getImageUrl(), userDto);
     }
 }
