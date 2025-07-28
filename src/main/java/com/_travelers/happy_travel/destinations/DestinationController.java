@@ -31,6 +31,18 @@ public class DestinationController {
     }
 
     @Operation(
+            summary = "Get all destinations sorted by User",
+            description = "Returns all destinations sorted by User."
+    )
+    @GetMapping("/auth")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<DestinationResponseShort>> getAllDestinationsUser(
+            @AuthenticationPrincipal CustomUserDetail userDetail) {
+        List<DestinationResponseShort> list = destinationService.getAllDestinationsUser(userDetail.getUsername());
+        return ResponseEntity.ok(list);
+    }
+
+    @Operation(
             summary = "Get destinations by filter",
             description = "Returns destinations by filter. If not found, returns an empty list."
     )
