@@ -1,5 +1,6 @@
 package com._travelers.happy_travel.users;
 
+import com._travelers.happy_travel.common.SecuredBaseController;
 import com._travelers.happy_travel.destinations.DestinationService;
 import com._travelers.happy_travel.destinations.dto.DestinationResponse;
 import com._travelers.happy_travel.security.CustomUserDetail;
@@ -16,11 +17,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@PreAuthorize("isAuthenticated()")
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
-public class UserController {
+public class UserController extends SecuredBaseController {
 
     private final UserService userService;
     private final DestinationService destinationService;

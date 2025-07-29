@@ -6,14 +6,17 @@ import com._travelers.happy_travel.users.UserService;
 import com._travelers.happy_travel.users.dto.UserLoginRequest;
 import com._travelers.happy_travel.users.dto.UserRegisterRequest;
 import com._travelers.happy_travel.users.dto.UserResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+@EnableMethodSecurity
 @RestController
 public class AuthController {
     private final UserService userService;
@@ -29,7 +32,7 @@ public class AuthController {
         UserResponse userResponse = userService.addUser(userRegisterRequest);
         return new ResponseEntity<>(userResponse, HttpStatus.CREATED);
     }
-
+    @SecurityRequirement(name = "bearerAuth")
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/admin/register")
     public ResponseEntity<UserResponse> adminRegister(@RequestBody @Valid UserRegisterRequest userRegisterRequest) {

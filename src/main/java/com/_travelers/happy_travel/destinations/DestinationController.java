@@ -5,14 +5,17 @@ import com._travelers.happy_travel.destinations.dto.DestinationResponse;
 import com._travelers.happy_travel.destinations.dto.DestinationResponseShort;
 import com._travelers.happy_travel.security.CustomUserDetail;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
+@EnableMethodSecurity
 @RestController
 @RequestMapping("/destinations")
 @RequiredArgsConstructor
@@ -36,6 +39,7 @@ public class DestinationController {
     )
     @GetMapping("/auth")
     @PreAuthorize("isAuthenticated()")
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<List<DestinationResponseShort>> getAllDestinationsUser(
             @AuthenticationPrincipal CustomUserDetail userDetail) {
         List<DestinationResponseShort> list = destinationService.getAllDestinationsUser(userDetail.getUsername());
@@ -78,6 +82,7 @@ public class DestinationController {
     )
     @PostMapping("")
     @PreAuthorize("isAuthenticated()")
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<DestinationResponse> addDestination(
             @AuthenticationPrincipal CustomUserDetail userDetail,
             @RequestBody @Valid DestinationRequest request) {
@@ -91,6 +96,7 @@ public class DestinationController {
     )
     @PutMapping("/{destinationId}")
     @PreAuthorize("isAuthenticated()")
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<DestinationResponse> updateDestination(
             @AuthenticationPrincipal CustomUserDetail userDetail,
             @PathVariable Long destinationId,
@@ -105,6 +111,7 @@ public class DestinationController {
     )
     @DeleteMapping("/{destinationId}")
     @PreAuthorize("isAuthenticated()")
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<String> deleteDestination(
             @AuthenticationPrincipal CustomUserDetail userDetail,
             @PathVariable Long destinationId) {
