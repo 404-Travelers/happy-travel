@@ -15,6 +15,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Set;
+
+
 
 public class JwtAuthFilter extends OncePerRequestFilter {
 
@@ -27,11 +31,42 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 
     @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String method = request.getMethod();
+
+        String path = request.getRequestURI();
+
+        if ("GET".equalsIgnoreCase(method) && ("/destinations".equals(path) || path.startsWith("/destinations/"))) {
+            return true;
+        }
+
+
+        Set<String> exactExclusions = Set.of(
+                "/login",
+                "/api/authenticate",
+                "/register",
+                "/v1/api/get-token",
+                "/swagger-ui.html"
+        );
+
+
+        List<String> prefixExclusions = List.of(
+                "/public/",
+                "/api/public/",
+                "/v3/api-docs/",
+                "/swagger-ui/",
+                "/swagger-resources/",
+                "/webjars/"
+        );
+
+
+        return exactExclusions.contains(path) || prefixExclusions.stream().anyMatch(path::startsWith);
+    }
+
+    @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
-
-        System.out.println("JwtAuthFilter engaged for URL: {}" + request.getRequestURI());
 
         String authHeader = request.getHeader("Authorization");
 
