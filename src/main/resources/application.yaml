@@ -1,7 +1,7 @@
 admin:
-  email: ${ADMIN_EMAIL}
-  username: ${ADMIN_USERNAME}
-  password: ${ADMIN_PASSWORD}
+  email: ${ADMIN_EMAIL:admin@example.com}
+  username: ${ADMIN_USERNAME:admin}
+  password: ${ADMIN_PASSWORD:password1234}
 
 spring:
   security:
