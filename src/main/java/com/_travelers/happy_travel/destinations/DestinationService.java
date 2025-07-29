@@ -78,7 +78,7 @@ public class DestinationService {
         destination.setCountry(request.country());
         destination.setCity(request.city());
         destination.setDescription(request.description());
-        destination.setImageUrl(request.imageUrl());
+        destination.setImageUrl(request.image());
 
         Destination updated = destinationRepository.save(destination);
         return DestinationMapper.toDto(updated);

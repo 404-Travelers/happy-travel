@@ -20,8 +20,8 @@ public record DestinationRequest(
         @Size(max=255, message = "Description must be less than 255 characters")
         String description,
 
-        @Schema(description = "ImageUrl", example = "https://example.com/image.jpg")
+        @Schema(description = "Image", example = "https://example.com/image.jpg")
         @Pattern(message = "Invalid content type", regexp = "^(https?://.*\\.(png|jpg|jpeg|gif|svg))$")
-        String imageUrl
+        String image
 ) {
 }
