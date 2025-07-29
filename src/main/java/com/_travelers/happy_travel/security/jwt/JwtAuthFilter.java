@@ -36,7 +36,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         String path = request.getRequestURI();
 
-        if ("GET".equalsIgnoreCase(method) && ("/destinations".equals(path) || path.startsWith("/destinations/"))) {
+        if ("GET".equalsIgnoreCase(method)
+                && path.startsWith("/destinations")
+                && !path.equals("/destinations/auth")) {
             return true;
         }
 
