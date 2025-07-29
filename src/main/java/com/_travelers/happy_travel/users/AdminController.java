@@ -1,5 +1,6 @@
 package com._travelers.happy_travel.users;
 
+import com._travelers.happy_travel.common.SecuredBaseController;
 import com._travelers.happy_travel.security.CustomUserDetail;
 import com._travelers.happy_travel.users.dto.UserResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,7 +17,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/admin")
 @RequiredArgsConstructor
-public class AdminController {
+public class AdminController extends SecuredBaseController {
 
     private final UserService userService;
 
