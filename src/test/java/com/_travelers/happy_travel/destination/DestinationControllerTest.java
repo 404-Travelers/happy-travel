@@ -229,7 +229,7 @@ class DestinationControllerTest {
                     .andExpect(jsonPath("$.status").value(400))
                     .andExpect(jsonPath("$.message.country").value("Country must be more than 3 characters and less than 50 characters"))
                     .andExpect(jsonPath("$.message.city").value("City is required"))
-                    .andExpect(jsonPath("$.message.imageUrl").value("Invalid content type"));
+                    .andExpect(jsonPath("$.message.image").value("Invalid content type"));
         }
 
         @Test
@@ -268,7 +268,7 @@ class DestinationControllerTest {
                     .andExpect(jsonPath("$.status").value(400))
                     .andExpect(jsonPath("$.message.country").value("Country must be more than 3 characters and less than 50 characters"))
                     .andExpect(jsonPath("$.message.city").value("City is required"))
-                    .andExpect(jsonPath("$.message.imageUrl").value("Invalid content type"));
+                    .andExpect(jsonPath("$.message.image").value("Invalid content type"));
         }
 
         @Test

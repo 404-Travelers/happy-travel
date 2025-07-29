@@ -11,7 +11,7 @@ public class DestinationMapper {
                 .country(dto.country())
                 .city(dto.city())
                 .description(dto.description())
-                .imageUrl(dto.imageUrl())
+                .imageUrl(dto.image())
                 .user(user)
                 .build();
     }

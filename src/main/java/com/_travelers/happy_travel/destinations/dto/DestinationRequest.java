@@ -22,6 +22,6 @@ public record DestinationRequest(
 
         @Schema(description = "ImageUrl", example = "https://example.com/image.jpg")
         @Pattern(message = "Invalid content type", regexp = "^(https?://.*\\.(png|jpg|jpeg|gif|svg))$")
-        String imageUrl
+        String image
 ) {
 }
