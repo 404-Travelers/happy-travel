@@ -1,6 +1,5 @@
 package com._travelers.happy_travel.config;
 
-
 import com._travelers.happy_travel.exceptions.ErrorResponse;
 import com._travelers.happy_travel.security.jwt.JwtAuthFilter;
 import com._travelers.happy_travel.security.jwt.JwtService;
@@ -23,12 +22,10 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
 import java.util.List;
 
 @Configuration
@@ -55,18 +52,6 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AccessDeniedHandler accessDeniedHandler() {
-        return (request, response, exception) -> {
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            response.setContentType("application/json");
-            ErrorResponse error = ErrorResponse.fromSecurityException(
-                    HttpStatus.FORBIDDEN, exception, request);
-            objectMapper().writeValue(response.getWriter(), error);
-        };
-    }
-
-
-    @Bean
     public AuthenticationEntryPoint authenticationEntryPoint() {
         return (request, response, exception) -> {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -80,7 +65,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("*"));
+        config.setAllowedOrigins(List.of("http://localhost:3000"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
@@ -90,8 +75,6 @@ public class SecurityConfig {
         return source;
     }
 
-
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthFilter jwtAuthFilter) throws Exception {
         http
@@ -99,15 +82,15 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(exceptionHandling -> exceptionHandling
-                        .authenticationEntryPoint(authenticationEntryPoint())
-                        .accessDeniedHandler(accessDeniedHandler()))
+                        .authenticationEntryPoint(authenticationEntryPoint()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
                                 "/swagger-resources/**", "/webjars/**").permitAll()
                         .requestMatchers( "/register", "/login").permitAll()
                         .requestMatchers("/users", "/users/**").authenticated()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/destinations**", "/destinations/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/destinations/auth").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/destinations", "/destinations/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/destinations").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/destinations/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/destinations/**").authenticated()

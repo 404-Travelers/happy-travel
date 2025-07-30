@@ -1,18 +1,21 @@
 package com._travelers.happy_travel.destinations;
 
-
 import com._travelers.happy_travel.destinations.dto.DestinationRequest;
 import com._travelers.happy_travel.destinations.dto.DestinationResponse;
 import com._travelers.happy_travel.destinations.dto.DestinationResponseShort;
 import com._travelers.happy_travel.security.CustomUserDetail;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
+@EnableMethodSecurity
 @RestController
 @RequestMapping("/destinations")
 @RequiredArgsConstructor
@@ -20,42 +23,80 @@ public class DestinationController {
 
     private final DestinationService destinationService;
 
+    @Operation(
+            summary = "Get all destinations",
+            description = "Returns all destinations."
+    )
     @GetMapping
     public ResponseEntity<List<DestinationResponseShort>> getAllDestinations() {
         List<DestinationResponseShort> list = destinationService.getAllDestinations();
         return ResponseEntity.ok(list);
     }
 
+    @Operation(
+            summary = "Get all destinations sorted by User",
+            description = "Returns all destinations sorted by User."
+    )
+    @GetMapping("/auth")
+    @PreAuthorize("isAuthenticated()")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<List<DestinationResponseShort>> getAllDestinationsUser(
+            @AuthenticationPrincipal CustomUserDetail userDetail) {
+        List<DestinationResponseShort> list = destinationService.getAllDestinationsUser(userDetail.getUsername());
+        return ResponseEntity.ok(list);
+    }
+
+    @Operation(
+            summary = "Get destinations by filter",
+            description = "Returns destinations by filter. If not found, returns an empty list."
+    )
     @GetMapping("/filter")
     public ResponseEntity<List<DestinationResponse>> getFilteredDestinations(@RequestParam (required = false) String city, @RequestParam (required = false) String country)  {
         List<DestinationResponse> list = destinationService.getFilteredDestinations(city, country);
         return ResponseEntity.ok(list);
     }
 
-    @GetMapping("/id/{destinationId}")
+    @Operation(
+            summary = "Get destination by ID",
+            description = "Returns destination by ID. Throws error if not found."
+    )
+    @GetMapping("/{destinationId}")
     public ResponseEntity<DestinationResponse> getDestinationById(@PathVariable Long destinationId) {
         DestinationResponse destination = destinationService.getDestinationById(destinationId);
         return ResponseEntity.ok(destination);
     }
 
+    @Operation(
+            summary = "Get destinations by username",
+            description = "Returns destinations by username. Throws error if username not found."
+    )
     @GetMapping("/user")
     public ResponseEntity<List<DestinationResponse>> getDestinationsByUserUsername(@RequestParam String username) {
         List<DestinationResponse> list = destinationService.getDestinationsByUserUsername(username);
         return ResponseEntity.ok(list);
     }
 
+    @Operation(
+            summary = "Add destination with authenticated user",
+            description = "Creates destination with authenticated user. Throws error if request is invalid."
+    )
     @PostMapping("")
     @PreAuthorize("isAuthenticated()")
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<DestinationResponse> addDestination(
             @AuthenticationPrincipal CustomUserDetail userDetail,
             @RequestBody @Valid DestinationRequest request) {
-        System.out.println("MY234 USER" + userDetail.getUser().toString());
         DestinationResponse created = destinationService.addDestination(request, userDetail.getUser());
         return ResponseEntity.ok(created);
     }
 
+    @Operation(
+            summary = "Update destination by ID with authenticated user",
+            description = "Update destination by ID with authenticated user. Throws error if request is invalid or destination not found."
+    )
     @PutMapping("/{destinationId}")
     @PreAuthorize("isAuthenticated()")
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<DestinationResponse> updateDestination(
             @AuthenticationPrincipal CustomUserDetail userDetail,
             @PathVariable Long destinationId,
@@ -64,8 +105,13 @@ public class DestinationController {
         return ResponseEntity.ok(updated);
     }
 
+    @Operation(
+            summary = "Delete destination by ID with authenticated user",
+            description = "Delete destination by ID with authenticated user. Return a message if successful."
+    )
     @DeleteMapping("/{destinationId}")
     @PreAuthorize("isAuthenticated()")
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<String> deleteDestination(
             @AuthenticationPrincipal CustomUserDetail userDetail,
             @PathVariable Long destinationId) {

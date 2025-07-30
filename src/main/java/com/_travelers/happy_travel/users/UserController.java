@@ -1,5 +1,6 @@
 package com._travelers.happy_travel.users;
 
+import com._travelers.happy_travel.common.SecuredBaseController;
 import com._travelers.happy_travel.destinations.DestinationService;
 import com._travelers.happy_travel.destinations.dto.DestinationResponse;
 import com._travelers.happy_travel.security.CustomUserDetail;
@@ -16,18 +17,17 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@PreAuthorize("isAuthenticated()")
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
-public class UserController {
+public class UserController extends SecuredBaseController {
 
     private final UserService userService;
     private final DestinationService destinationService;
 
     @Operation(
-            summary = "Get user by ID",
-            description = "Returns a user by ID. Throws error if not found."
+            summary = "Get user by authentication",
+            description = "Returns a user by authentication. Throws error if not found."
     )
     @GetMapping("/me")
     public ResponseEntity<UserResponse> getMyUser(
@@ -36,6 +36,10 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
+    @Operation(
+            summary = "Get destinations by authenticated user",
+            description = "Return destinations by authenticated user. Throws error if not found."
+    )
     @GetMapping("/me/destinations")
     public ResponseEntity<List<DestinationResponse>> getMyDestinations(@AuthenticationPrincipal CustomUserDetail userDetail) {
         List<DestinationResponse> list = destinationService.getDestinationsByUserUsername(userDetail.getUser().getUsername());
@@ -43,8 +47,8 @@ public class UserController {
     }
 
     @Operation(
-            summary = "Update user by ID",
-            description = "Updates an existing user’s username, email, or password."
+            summary = "Update authenticated user",
+            description = "Updates the authenticated user's username, email, or password."
     )
     @PutMapping("/me")
     public ResponseEntity<UserResponse> updateMyUser(
@@ -57,8 +61,8 @@ public class UserController {
 
 
     @Operation(
-            summary = "Delete user by ID",
-            description = "Deletes user with given ID. Returns 204 if successful."
+            summary = "Delete authenticated user",
+            description = "Deletes authenticated user. Returns a message if successful."
     )
     @DeleteMapping("/me")
     public ResponseEntity<String> deleteMyUser(
