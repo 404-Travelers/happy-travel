@@ -127,7 +127,7 @@ public class UserServiceTest {
         @Test
         void getUserByUsername_whenUserDoesNotExist_returnsException() {
             String username = "Mike";
-            String expectedMessage = "User with username " + username + " not found";
+            String expectedMessage = "User with username \"" + username + "\" not found";
             when(userRepository.findByUsername(anyString())).thenReturn(Optional.empty());
 
             Exception exception = assertThrows(EntityNotFoundException.class, () -> userService.getByUsername(username));
@@ -159,7 +159,7 @@ public class UserServiceTest {
         @Test
         void addUser_whenUsernameAlreadyExists_returnsException() {
             UserRegisterRequest userRequest = userRegisterRequest;
-            String expectedMessage = "User with username " + userRequest.username() + " already exists";
+            String expectedMessage = "User with username \"" + userRequest.username() + "\" already exists";
             when(userRepository.existsByUsername(eq(userRegisterRequest.username()))).thenReturn(true);
 
             Exception exception = assertThrows(EntityAlreadyExistsException.class, () -> userService.addUser(userRequest));
@@ -170,7 +170,7 @@ public class UserServiceTest {
         @Test
         void addUser_whenEmailAlreadyExists_returnsException() {
             UserRegisterRequest userRequest = userRegisterRequest;
-            String expectedMessage = "User with email " + userRequest.email() + " already exists";
+            String expectedMessage = "User with email \"" + userRequest.email() + "\" already exists";
             when(userRepository.existsByEmail(eq(userRegisterRequest.email()))).thenReturn(true);
             when(userRepository.existsByUsername(eq(userRegisterRequest.username()))).thenReturn(false);
 
@@ -200,7 +200,7 @@ public class UserServiceTest {
         @Test
         void updateUser_whenIdDoesNotExist_returnsException() {
             Long id = 10L;
-            String expectedMessage = "User with id " + id + " not found";
+            String expectedMessage = "User with id \"" + id + "\" not found";
             when(userRepository.findById(eq(id))).thenReturn(Optional.empty());
 //        when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
 
@@ -214,7 +214,7 @@ public class UserServiceTest {
         void updateUser_whenUsernameAlreadyExists_returnsException() {
             Long id = 10L;
             userRegisterRequest = new UserRegisterRequest("Mark", "mark@gamil.com", "1234");
-            String expectedMessage = "User with username " + userRegisterRequest.username() + " already exists";
+            String expectedMessage = "User with username \"" + userRegisterRequest.username() + "\" already exists";
             when(userRepository.findById(id)).thenReturn(Optional.of(user));
             when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
 
@@ -265,7 +265,7 @@ public class UserServiceTest {
         @Test
         void deleteUserAdmin_whenUserDoesNotExist_returnsException() {
             Long id = 1L;
-            String expectedMessage = "User with id " + id + " not found";
+            String expectedMessage = "User with id \"" + id + "\" not found";
             when(userRepository.existsById(eq(id))).thenReturn(false);
 
             Exception exception = assertThrows(EntityNotFoundException.class, () -> userService.deleteUserByIdAdmin(id));
@@ -291,7 +291,7 @@ public class UserServiceTest {
         @Test
         void deleteOwnUser_whenUserDoesNotExist_returnsException() {
             Long id = 1L;
-            String expectedMessage = "User with id " + id + " not found";
+            String expectedMessage = "User with id \"" + id + "\" not found";
             when(userRepository.existsById(eq(id))).thenReturn(false);
 
             Exception exception = assertThrows(EntityNotFoundException.class, () -> userService.deleteOwnUser(id));
@@ -322,7 +322,7 @@ public class UserServiceTest {
         @Test
         void loadUserByUsername_whenUserDoesNotExist_returnsException() {
             String username = "Mike";
-            String expectedMessage = "User with username " + username + " not found";
+            String expectedMessage = "User with username \"" + username + "\" not found";
             when(userRepository.findByUsername(anyString())).thenReturn(Optional.empty());
 
             Exception exception = assertThrows(EntityNotFoundException.class, () -> userService.loadUserByUsername(username));

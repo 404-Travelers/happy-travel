@@ -162,7 +162,7 @@ class DestinationControllerTest {
         @Test
         void getDestinationById_whenDestinationDoesNotExist_returnsException() throws Exception {
             Long id = 999L;
-            String expectedMessage = "Destination with id " + id + " not found";
+            String expectedMessage = "Destination with id \"" + id + "\" not found";
             given(destinationService.getDestinationById(id)).willThrow(new EntityNotFoundException("Destination", "id", String.valueOf(id)));
 
             mockMvc.perform(get("/destinations/{id}", id))
@@ -190,7 +190,7 @@ class DestinationControllerTest {
         @Test
         void getDestinationsByUserUsername_whenUserDoesNotExist_returnsException() throws Exception {
             String username = "No user";
-            String expectedMessage = "User with username " + username + " not found";
+            String expectedMessage = "User with username \"" + username + "\" not found";
             given(destinationService.getDestinationsByUserUsername(username)).willThrow(new EntityNotFoundException("User", "username", username));
 
             mockMvc.perform(get("/destinations/user?username={username}", username))
@@ -318,7 +318,7 @@ class DestinationControllerTest {
         @Test
         void deleteDestination_whenDestinationDoesNotExist_returns404() throws Exception {
             Long id = 1L;
-            String expectedMessage = "Destination with id " + id + " not found";
+            String expectedMessage = "Destination with id \"" + id + "\" not found";
             given(destinationService.deleteDestination(id, user)).willThrow(new EntityNotFoundException(Destination.class.getSimpleName(), "id", id.toString()));
 
             performRequest(DELETE, "/destinations/" + id, destinationRequest, testUserDetails)

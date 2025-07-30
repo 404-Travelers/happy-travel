@@ -164,7 +164,7 @@ public class DestinationServiceTest {
         void getDestinationsByUserUsername_whenUserDoesNotExist_returnsException() {
             String username = user.getUsername();
             when(userService.getByUsername(eq(username))).thenThrow( new EntityNotFoundException(User.class.getSimpleName(), "username", username));
-            String expectedMessage = "User with username " + username + " not found";
+            String expectedMessage = "User with username \"" + username + "\" not found";
 
             Exception exception = assertThrows(EntityNotFoundException.class, () -> destinationService.getDestinationsByUserUsername(username));
             assertEquals(expectedMessage, exception.getMessage());
@@ -232,7 +232,7 @@ public class DestinationServiceTest {
         @Test
         void deleteDestination_whenDestinationDoesNotExist_returnsException() {
             Long id = 1L;
-            String expectedMessage = "Destination with id " + id + " not found";
+            String expectedMessage = "Destination with id \"" + id + "\" not found";
             when(destinationRepository.findById(eq(id))).thenReturn(Optional.empty());
 
             Exception exception = assertThrows(EntityNotFoundException.class, () -> destinationService.deleteDestination(id, user));
