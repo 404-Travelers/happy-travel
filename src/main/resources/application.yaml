@@ -1,0 +1,69 @@
+port:
+  front: ${PORT_FRONT:3000}
+admin:
+  email: ${ADMIN_EMAIL:admin@example.com}
+  username: ${ADMIN_USERNAME:admin}
+  password: ${ADMIN_PASSWORD:password1234}
+
+spring:
+  security:
+    user:
+      name: testuser
+      password: testpass
+      roles: ROLE_USER
+
+  output:
+    ansi:
+      enabled: ALWAYS
+  application:
+    name: happy-travel
+  config:
+    import: optional:file:.env[.properties]
+
+  # Database Configuration
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+#    initialization-mode: always
+
+  # JPA Configuration
+  jpa:
+    defer-datasource-initialization: true
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+
+    # Data Initialization
+  sql:
+    init:
+      mode: always
+
+  #spring.sql.init.data-locations=classpath:data.sql
+
+  # Server Configuration
+server:
+  port: ${SERVER_PORT}
+  #error: include-message: always
+
+  # Logging Configuration
+logging:
+  level:
+    org.springframework.web: DEBUG
+    org.springframework.security: TRACE
+    org.hibernate.SQL: DEBUG
+    org.hibernate.springframework: DEBUG
+#      com.zaxxer.hikari: DEBUG
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+#    tagsSorter: alpha
