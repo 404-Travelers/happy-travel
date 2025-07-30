@@ -1,3 +1,5 @@
+port:
+  front: ${PORT_FRONT:3000}
 admin:
   email: ${ADMIN_EMAIL:admin@example.com}
   username: ${ADMIN_USERNAME:admin}
