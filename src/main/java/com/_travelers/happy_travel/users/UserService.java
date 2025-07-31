@@ -73,7 +73,6 @@ public class UserService implements UserDetailsService {
         return UserMapper.toDto(user);
     }
 
-
     @PreAuthorize("isAuthenticated()")
     public UserResponse updateOwnUser(Long id, UserRegisterRequest request) {
         User existingUser = userRepository.findById(id)
