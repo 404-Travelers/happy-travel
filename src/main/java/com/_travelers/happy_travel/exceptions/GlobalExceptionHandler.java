@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -67,6 +68,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException exception, HttpServletRequest request) {
         HttpStatus status =  HttpStatus.FORBIDDEN;
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.FORBIDDEN, "Forbidden: " + exception.getMessage(), request);
+        return new ResponseEntity<>(errorResponse, status);
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handleBadCredentialsException(BadCredentialsException exception, HttpServletRequest req) {
+        HttpStatus status = HttpStatus.UNAUTHORIZED;
+        ErrorResponse errorResponse = new ErrorResponse(status, "Unauthorized: Bad credentials", req);
         return new ResponseEntity<>(errorResponse, status);
     }
 

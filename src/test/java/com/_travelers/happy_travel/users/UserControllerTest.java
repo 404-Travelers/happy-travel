@@ -57,7 +57,7 @@ public class UserControllerTest{
         user = new User(1L, "Kate", "kate.dev@gmail.com", "encoded-password", Role.ADMIN, new ArrayList<>());
         testUserDetails = new CustomUserDetail(user);
         userRegisterRequest = new UserRegisterRequest("Katie", "kate.dev@gmail.com", "myPpas%s1234*");
-        userResponse = new UserResponse("Katie", "kate.dev@gmail.com", "ROLE_USER");
+        userResponse = new UserResponse(1L, "Katie", "kate.dev@gmail.com", "ROLE_USER");
         invalidUserRegisterRequest = new UserRegisterRequest("Ka", "kate.dev@gmail.com", "mypass1234*");
         mockMvc = MockMvcBuilders
           .webAppContextSetup(context)

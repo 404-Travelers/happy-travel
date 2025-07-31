@@ -18,8 +18,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
-
-
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
@@ -42,7 +40,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return true;
         }
 
-
         Set<String> exactExclusions = Set.of(
                 "/login",
                 "/api/authenticate",
@@ -50,7 +47,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 "/v1/api/get-token",
                 "/swagger-ui.html"
         );
-
 
         List<String> prefixExclusions = List.of(
                 "/public/",
@@ -60,7 +56,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 "/swagger-resources/",
                 "/webjars/"
         );
-
 
         return exactExclusions.contains(path) || prefixExclusions.stream().anyMatch(path::startsWith);
     }

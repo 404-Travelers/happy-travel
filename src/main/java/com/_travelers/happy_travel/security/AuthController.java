@@ -32,6 +32,7 @@ public class AuthController {
         UserResponse userResponse = userService.addUser(userRegisterRequest);
         return new ResponseEntity<>(userResponse, HttpStatus.CREATED);
     }
+
     @SecurityRequirement(name = "bearerAuth")
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/admin/register")
@@ -41,7 +42,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<JwtResponse> login(@RequestBody UserLoginRequest userLoginRequest) {
+    public ResponseEntity<JwtResponse> login(@RequestBody @Valid UserLoginRequest userLoginRequest) {
         JwtResponse jwtResponse = jwtService.loginAuthentication(userLoginRequest);
         return new ResponseEntity<>(jwtResponse, HttpStatus.OK);
     }
