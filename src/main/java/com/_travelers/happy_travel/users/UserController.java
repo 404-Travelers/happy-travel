@@ -59,7 +59,6 @@ public class UserController extends SecuredBaseController {
         return ResponseEntity.ok(updatedUser);
     }
 
-
     @Operation(
             summary = "Delete authenticated user",
             description = "Deletes authenticated user. Returns a message if successful."
