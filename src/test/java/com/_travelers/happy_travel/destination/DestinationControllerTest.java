@@ -175,7 +175,6 @@ class DestinationControllerTest {
             verify(destinationService, times(1)).getDestinationById(eq(id));
         }
 
-
         @Test
         void getDestinationsByUserUsername_whenUserExists_returnsDestinationsList() throws Exception {
             given(destinationService.getDestinationsByUserUsername(user.getUsername())).willReturn(List.of(destinationResponse));

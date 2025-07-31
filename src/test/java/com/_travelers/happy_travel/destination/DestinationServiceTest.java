@@ -1,6 +1,5 @@
 package com._travelers.happy_travel.destination;
 
-
 import com._travelers.happy_travel.destinations.Destination;
 import com._travelers.happy_travel.destinations.DestinationRepository;
 import com._travelers.happy_travel.destinations.DestinationService;
