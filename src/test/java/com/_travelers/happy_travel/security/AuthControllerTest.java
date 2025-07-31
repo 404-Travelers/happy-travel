@@ -3,12 +3,14 @@ package com._travelers.happy_travel.security;
 import com._travelers.happy_travel.security.jwt.JwtResponse;
 import com._travelers.happy_travel.security.jwt.JwtService;
 import com._travelers.happy_travel.users.Role;
+import com._travelers.happy_travel.users.User;
 import com._travelers.happy_travel.users.UserService;
 import com._travelers.happy_travel.users.dto.UserLoginRequest;
 import com._travelers.happy_travel.users.dto.UserRegisterRequest;
 import com._travelers.happy_travel.users.dto.UserResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -17,14 +19,16 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.List;
+import java.util.ArrayList;
 
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -44,12 +48,23 @@ class AuthControllerTest {
     @MockitoBean
     private JwtService jwtService;
 
+    private UserDetails userAdmin;
+    private UserDetails userUser;
+
     private String asJsonString(Object object) {
         try {
             return objectMapper.writeValueAsString(object);
         } catch (Exception exception) {
             throw new RuntimeException("Failed to convert object to JSON string for testing", exception);
         }
+    }
+
+    @BeforeEach
+    void setUp() {
+        User user = new User(1L, "Kate", "kate.dev@gmail.com", "encoded-password", Role.ADMIN, new ArrayList<>());
+        User userNotAdmin = new User(1L, "Katie", "kate.dev@gmail.com", "encoded-password", Role.USER, new ArrayList<>());
+        userAdmin = new CustomUserDetail(user);
+        userUser = new CustomUserDetail(userNotAdmin);
     }
 
     @Nested
@@ -61,12 +76,14 @@ class AuthControllerTest {
         void testRegisterUser() throws Exception {
             UserRegisterRequest request = new UserRegisterRequest("john", "john@gmail.com", "pasL09?sword");
             UserResponse userResponse = new UserResponse(1L, "john", "john@gmail.com", "ROLE_USER");
+            given(userService.addUser(request)).willReturn(userResponse);
+            String expectedJson = asJsonString(userResponse);
 
             mockMvc.perform(post("/register")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isCreated())
-                    .andExpect(content().json(asJsonString(List.of(userResponse))));
+                    .andExpect(content().json(expectedJson));
 
             verify(userService, times(1)).addUser(request);
         }
@@ -148,4 +165,87 @@ class AuthControllerTest {
                     .andExpect(status().isUnauthorized());
         }
     }
+
+    @Nested
+    @DisplayName("REGISTER ADMIN-POST /admin/register")
+    class RegisterAdminTests {
+
+        @Test
+        @DisplayName("Should register an admin and return 201 Created")
+        void testRegisterAdmin() throws Exception {
+            UserRegisterRequest request = new UserRegisterRequest("john", "john@gmail.com", "pasL09?sword");
+            UserResponse userResponse = new UserResponse(1L, "john", "john@gmail.com", "ROLE_ADMIN");
+            given(userService.addAdmin(request)).willReturn(userResponse);
+            String expectedJson = asJsonString(userResponse);
+
+            mockMvc.perform(post("/admin/register")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request))
+                            .with(user(userAdmin)))
+                    .andExpect(status().isCreated())
+                    .andExpect(content().json(expectedJson));
+
+            verify(userService, times(1)).addAdmin(request);
+        }
+
+        @Test
+        @DisplayName("Should not register an admin and return 401 Unauthorized")
+        void testRegisterAdminNoAuthenticated() throws Exception {
+            UserRegisterRequest request = new UserRegisterRequest("john", "john@gmail.com", "pasL09?sword");
+
+            mockMvc.perform(post("/admin/register")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isUnauthorized());
+
+        }
+
+        @Test
+        @DisplayName("Should not register an admin and return 403 Forbidden")
+        void testRegisterAdminNoPermission() throws Exception {
+            UserRegisterRequest request = new UserRegisterRequest("john", "john@gmail.com", "pasL09?sword");
+
+            mockMvc.perform(post("/admin/register")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request))
+                            .with(user(userUser)))
+                    .andExpect(status().isForbidden());
+
+        }
+
+        @Test
+        @DisplayName("Should return 400 Bad Request when password is missing during registration")
+        void testRegisterWithMissingPassword () throws Exception {
+            UserRegisterRequest invalidRequest = new UserRegisterRequest("john", "john@gmail.com", "");
+
+            mockMvc.perform(post("/admin/register")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(invalidRequest))
+                            .with(user(userAdmin)))
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @DisplayName("Should return 400 Bad Request when username is missing during registration")
+        void testRegisterWithMissingUsername() throws Exception {
+            UserRegisterRequest invalidRequest = new UserRegisterRequest("", "john@gmail.com", "password");
+
+            mockMvc.perform(post("/admin/register")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(invalidRequest))
+                            .with(user(userAdmin)))
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @DisplayName("Should return 400 Bad Request when register request body is empty")
+        void testRegisterWithEmptyBody () throws Exception {
+            mockMvc.perform(post("/register")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{}")
+                            .with(user(userAdmin)))
+                    .andExpect(status().isBadRequest());
+        }
+    }
+
 }
