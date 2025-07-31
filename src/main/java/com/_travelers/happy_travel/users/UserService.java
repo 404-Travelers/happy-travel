@@ -69,8 +69,8 @@ public class UserService implements UserDetailsService {
         String encodedPassword = passwordEncoder.encode(request.password());
         User user = UserMapper.toEntity(request, role);
         user.setPassword(encodedPassword);
-        userRepository.save(user);
-        return UserMapper.toDto(user);
+        User savedUser = userRepository.save(user);
+        return UserMapper.toDto(savedUser);
     }
 
     @PreAuthorize("isAuthenticated()")

@@ -37,7 +37,7 @@ public class UserServiceTest {
     @BeforeEach
     void setUp() {
         user  = new User(1L, "Kate", "kate.dev@gmail.com", "encoded-password", Role.USER, new ArrayList<Destination>());;
-        userResponse = new UserResponse("Kate", "kate.dev@gmail.com", "USER");
+        userResponse = new UserResponse(1L, "Kate", "kate.dev@gmail.com", "USER");
         userRegisterRequest = new UserRegisterRequest("Kate", "kate.dev@gmail.com", "mypass1234*");
     }
     
@@ -229,7 +229,7 @@ public class UserServiceTest {
         void updateUser_whenUsernameChangedAndNotExists_returnsUpdatedUser() {
             Long id = 1L;
             userRegisterRequest = new UserRegisterRequest("Olivia", "kate.dev@gmail.com", "newpass456*");
-            userResponse = new UserResponse("Olivia", "kate.dev@gmail.com", "USER");
+            userResponse = new UserResponse(1L, "Olivia", "kate.dev@gmail.com", "USER");
             when(userRepository.findById(id)).thenReturn(Optional.of(user));
             when(userRepository.findByUsername("Olivia")).thenReturn(Optional.empty());
             when(passwordEncoder.encode(any())).thenReturn("encoded-password");
