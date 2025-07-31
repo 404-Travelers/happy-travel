@@ -32,7 +32,7 @@ public class AuthController {
         UserResponse userResponse = userService.addUser(userRegisterRequest);
         return new ResponseEntity<>(userResponse, HttpStatus.CREATED);
     }
-    
+
     @SecurityRequirement(name = "bearerAuth")
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/admin/register")
